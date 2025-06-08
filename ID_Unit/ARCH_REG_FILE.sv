@@ -6,6 +6,8 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
+`timescale 1ns/1ns
+
 module ARCH_REG_FILE #(
 	ARCH_REG_NUM_WIDTH 	   = `ARCH_REG_NUM_WIDTH, 						// Number of architecture registers
 	PHYSICAL_REG_NUM_WIDTH = `PHYSICAL_REG_NUM_WIDTH					// width (number of bits) of the number of physical registers
@@ -96,6 +98,9 @@ module ARCH_REG_FILE #(
 		//read register instruction
 		phy_read_reg_num1 = arch_phy_mapping[arch_read_reg_num1];
 		phy_read_reg_num2 = arch_phy_mapping[arch_read_reg_num2];
+		
+		//for write register
+		phy_write_reg_num = arch_phy_mapping_next[arch_write_reg_num];
 	
 	end
 	
@@ -112,7 +117,6 @@ module ARCH_REG_FILE #(
 				arch_phy_mapping[i]  <= i;
 			end
 			
-			//TODO: should add inialization for full FIFO for all the physical registers values
 		end
 		
 		else begin

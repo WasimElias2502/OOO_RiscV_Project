@@ -6,6 +6,10 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
+
+`timescale 1ns/1ns
+
+
 // Synchronous_FIFO.sv (Keep this in a separate file or above your rename unit)
 module SYN_FIFO #(
 	parameter DATA_WIDTH = 32,
