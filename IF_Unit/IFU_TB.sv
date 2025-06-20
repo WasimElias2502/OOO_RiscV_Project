@@ -56,18 +56,18 @@ module IFU_TB #() ();
 			uj_type_addr   = 0 ;
 			jalr_type_addr = 0 ;
 			//first cycle pc+4
-			#40 next_pc_sel = `PC_PLUS_4;
+			#40 next_pc_sel = pc_plus_4;
 			//second cycle sb_type
-			#40 next_pc_sel = `SB ;
+			#40 next_pc_sel = sb ;
 				sb_type_addr = 20;
 			//third cycle UJ type
-			#40 next_pc_sel = `UJ ;
+			#40 next_pc_sel = uj ;
 				uj_type_addr = 24;
 			//fourth cycle JALR type
-			#40 next_pc_sel = `JALR ;
+			#40 next_pc_sel = jalr ;
 			jalr_type_addr = 16;
 			//fifth cycle UJ type
-			#40 next_pc_sel = `UJ ;
+			#40 next_pc_sel = uj ;
 				uj_type_addr = 0;
 			
 			

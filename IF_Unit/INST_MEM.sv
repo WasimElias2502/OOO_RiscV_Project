@@ -10,14 +10,15 @@
 
 
 module INST_MEM #(
-	INST_ADDR_WIDTH = `INST_ADDR_WIDTH,					// Addess width of the instruction memory
-	FETCH_WIDTH = `FETCH_WIDTH,							// Number of instruction to fetch
-	INIT_FILE = `INIT_INST_MEM_FILE 					// File to initialize the memory
+	INST_ADDR_WIDTH 				= `INST_ADDR_WIDTH,						// Addess width of the instruction memory
+	FETCH_WIDTH 					= `FETCH_WIDTH,							// Number of instruction to fetch
+	parameter string INIT_FILE 		= `INIT_INST_MEM_FILE 					// File to initialize the memory
 ) (
 	input [INST_ADDR_WIDTH-1:0] PC,
 	input reset,
 	output [31:0] Instruction_Code [FETCH_WIDTH-1:0]
 );
+	
 	reg[7:0] Memory [(1<<INST_ADDR_WIDTH)-1:0];
 	reg[31:0] Fetched_instructions [FETCH_WIDTH-1:0];
 	
@@ -29,7 +30,7 @@ module INST_MEM #(
 	begin
 		for(int i=0; i<FETCH_WIDTH; i++) 
 		begin
-			Fetched_instructions[i] = { Memory[PC+i*4] , Memory[PC+i*3], Memory[PC+i*2], Memory[PC+i]};
+			Fetched_instructions[i] = { Memory[PC+4*i+3] , Memory[PC+4*i+2], Memory[PC+4*i+1], Memory[PC+4*i]};
 		end
 	end
 	
@@ -41,7 +42,7 @@ module INST_MEM #(
 				
 			if(INIT_FILE != "") begin
 				$display("Initializing Memory with %s" , INIT_FILE);
-				$readmemh(INIT_FILE , Memory);
+				$readmemh("INIT_INST_MEM.hex" , Memory);
 			end else begin
 				$display("Did not find INIT_FILE for Instruction Memory" , INIT_FILE);
 			end		

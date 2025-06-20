@@ -21,11 +21,11 @@ module ARCH_REG_FILE_TB #(
 	logic [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num1;					
 	logic [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num2;					
 	logic [ARCH_REG_NUM_WIDTH-1:0] arch_write_reg_num;					
-	logic 						regwrite;
+	logic 						   regwrite;
 			//inputs to free physical registers
 	logic commit_valid;
 	logic commit_with_write;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] commited_wr_register,addr ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] commited_wr_register ;
 	
 	//DUT output
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num1; 				
@@ -87,7 +87,7 @@ module ARCH_REG_FILE_TB #(
 	//drive inputs for the DUT
 	initial
 		begin
-			#20 
+			#21 
 			arch_read_reg_num1   = 1;					
 			arch_read_reg_num2   = 30;					
 			arch_write_reg_num   = 4;					

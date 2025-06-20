@@ -25,7 +25,8 @@ module ARCH_REG_FILE #(
 	
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num1, 		// ***************** physical ***************//
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num2,		// ******************** W/R *****************//
-	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_write_reg_num			// **************** registers****************//
+	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_write_reg_num,			// **************** registers****************//
+	output logic 						      valid
 );
 
 	//local params in use
@@ -34,20 +35,20 @@ module ARCH_REG_FILE #(
 	
 	
 	//internal signals for the FIFO 
-	logic 								free_phy_registers_is_empty;
-	logic 								pop_free_phy_register ;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  pop_free_phy_register_id ;
-	logic push_free_phy_register ;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] push_free_phy_register_id ;
+	logic 													free_phy_registers_is_empty;
+	logic 													pop_free_phy_register ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  					pop_free_phy_register_id ;
+	logic 													push_free_phy_register ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 						push_free_phy_register_id ;
 	
 
 	//mapping of the arch-phy registers
-	reg [PHYSICAL_REG_NUM_WIDTH-1:0] arch_phy_mapping 		[(1<<ARCH_REG_NUM_WIDTH)-1:0];
-	reg [PHYSICAL_REG_NUM_WIDTH-1:0] arch_phy_mapping_next 	[(1<<ARCH_REG_NUM_WIDTH)-1:0];
+	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 						arch_phy_mapping 		[(1<<ARCH_REG_NUM_WIDTH)-1:0];
+	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 						arch_phy_mapping_next 	[(1<<ARCH_REG_NUM_WIDTH)-1:0];
 	
-	//array to tell if physical register in use or not
-	reg [(1<<ARCH_REG_NUM_WIDTH)-1:0] phy_register_in_use ;
-	reg [(1<<ARCH_REG_NUM_WIDTH)-1:0] phy_register_in_use_next ;
+	//array to tell the previous physical register that was in use 
+	reg [PHYSICAL_REG_NUM_WIDTH :0] 						phy_register_old 	   [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
+	reg [PHYSICAL_REG_NUM_WIDTH :0] 						phy_register_old_next  [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
 	
 	
 	//instantiation of the free physical register 
@@ -78,22 +79,24 @@ module ARCH_REG_FILE #(
 		push_free_phy_register_id = 0 ;
 		push_free_phy_register = 1'b0 ;
 		arch_phy_mapping_next = arch_phy_mapping ;
-		phy_register_in_use_next = phy_register_in_use ;
+		phy_register_old_next = phy_register_old ;
 	
 		//allocate new register for WR
 		if(regwrite && !free_phy_registers_is_empty) begin
 			pop_free_phy_register = 1'b1; 
-			phy_register_in_use_next[arch_phy_mapping[arch_write_reg_num]] = 1'b0;
-			arch_phy_mapping_next[arch_write_reg_num] = pop_free_phy_register_id;
-			phy_register_in_use_next[pop_free_phy_register_id] = 1'b1;
+			arch_phy_mapping_next[arch_write_reg_num]	    = pop_free_phy_register_id;
+			phy_register_old_next[pop_free_phy_register_id] = arch_phy_mapping[arch_write_reg_num]; // update old used register
 		end
 		
 		//got commited WR instruction
-		if(commit_valid && commit_with_write && !phy_register_in_use[arch_phy_mapping[arch_write_reg_num]] ) begin
-			push_free_phy_register = 1'b1;
-			push_free_phy_register_id = commited_wr_register;
-			phy_register_in_use_next[commited_wr_register] = 1'b0;
+		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF) begin
+			push_free_phy_register    = 1'b1;
+			push_free_phy_register_id = phy_register_old[commited_wr_register];
+			phy_register_old_next[commited_wr_register] = `NO_OLD_PRF;	
 		end
+		
+		//not valid - cannot rename
+		valid = ~free_phy_registers_is_empty;
 		
 		//read register instruction
 		phy_read_reg_num1 = arch_phy_mapping[arch_read_reg_num1];
@@ -111,7 +114,9 @@ module ARCH_REG_FILE #(
 		
 		if(reset) begin
 			//initialize arch in use for the first 1<<ARCH_REG_NUM_WIDTH registers
-			phy_register_in_use <= {{NOT_IN_USE{1'b0}} , {IN_USE{1'b1}}};
+			for(int i=0 ; i< (1<<PHYSICAL_REG_NUM_WIDTH); i++) begin 
+				phy_register_old[i] <= `NO_OLD_PRF;
+			end 
 			
 			for (int i=0 ; i < 1<<ARCH_REG_NUM_WIDTH ; i++) begin
 				arch_phy_mapping[i]  <= i;
@@ -120,8 +125,8 @@ module ARCH_REG_FILE #(
 		end
 		
 		else begin
-			phy_register_in_use <= phy_register_in_use_next;
-			arch_phy_mapping <= arch_phy_mapping_next ;
+			phy_register_old <= phy_register_old_next;
+			arch_phy_mapping <= arch_phy_mapping_next;
 		end
 		
 	end	

@@ -14,7 +14,7 @@ module IFU #(
 	input clk,
 	input reset,
 	//inputs for branch instructions
-	input [1:0] next_pc_sel,
+	input next_pc_t next_pc_sel,
 	input [INST_ADDR_WIDTH-1:0] SB_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] UJ_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] JALR_Type_addr,
@@ -40,11 +40,11 @@ module IFU #(
 			//selector for PC - branches or PC+4
 			else begin
 				case(next_pc_sel)
-					`SB: PC <= SB_Type_addr;
-					`UJ: PC <= UJ_Type_addr;
-					`JALR: PC <= JALR_Type_addr;
-					`PC_PLUS_4: PC <= PC+4*FETCH_WIDTH;
-					default: PC <= 'x; 
+					sb		 : PC <= SB_Type_addr;
+					uj		 : PC <= UJ_Type_addr;
+					jalr	 : PC <= JALR_Type_addr;
+					pc_plus_4: PC <= PC+4*FETCH_WIDTH;
+					default  : PC <= 'x; 
 				endcase
 				
 			end
