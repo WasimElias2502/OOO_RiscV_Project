@@ -2,7 +2,7 @@
  * File          : ARCH_REG_TB_FSM.sv
  * Project       : RTL
  * Author        : epwebq
- * Creation date : Jun 17, 2025
+ * Creation date : Jun 20, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
 

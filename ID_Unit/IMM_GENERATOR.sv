@@ -9,7 +9,7 @@
 module IMM_GENETOR #(
 	IMM_WIDTH          		  = `IMM_WIDTH,
 	ARCH_REG_NUM_WIDTH 		  = `ARCH_REG_NUM_WIDTH,
-	GENERATED_IMMEDIATE_WIDTH = 1<<ARCH_REG_NUM_WIDTH
+	GENERATED_IMMEDIATE_WIDTH = `REG_VAL_WIDTH
 ) (
 	input  [IMM_WIDTH-1:0] 					immediate_input,
 	output [GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate
