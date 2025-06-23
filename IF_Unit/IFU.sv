@@ -18,6 +18,7 @@ module IFU #(
 	input [INST_ADDR_WIDTH-1:0] SB_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] UJ_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] JALR_Type_addr,
+	input 						stall,
 	//outputs
 	output [31:0] Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
@@ -39,16 +40,21 @@ module IFU #(
 			end
 			//selector for PC - branches or PC+4
 			else begin
-				case(next_pc_sel)
-					sb		 : PC <= SB_Type_addr;
-					uj		 : PC <= UJ_Type_addr;
-					jalr	 : PC <= JALR_Type_addr;
-					pc_plus_4: PC <= PC+4*FETCH_WIDTH;
-					default  : PC <= 'x; 
-				endcase
+				if(!stall) begin
+					case(next_pc_sel)
+						sb		 	: PC <= SB_Type_addr;
+						uj		 	: PC <= UJ_Type_addr;
+						jalr	 	: PC <= JALR_Type_addr;
+						pc_plus_4_t	: PC <= PC+4*FETCH_WIDTH;
+						default  	: PC <= 'x; 
+					endcase
+				end // if(!stall)
 				
-			end
-			
-		end
+				else begin // stall is asserted 
+					PC <= PC;
+				end
+				
+			end // else begin always @(posedge clk , posedge reset)	
+		end // 
 
 endmodule

@@ -29,6 +29,8 @@
 `define OPCODE_WIDTH			    7
 `define FUNC3_WIDTH					3
 `define FUNC7_WIDTH					7
+`define ALU_OP_WIDTH 				4
+`define CTRL_WIDTH					5+`ALU_OP_WIDTH
 
 //******************** Reservation Station Defines **************************//
 `define RS_TAG_WIDTH				`PHYSICAL_REG_NUM_WIDTH

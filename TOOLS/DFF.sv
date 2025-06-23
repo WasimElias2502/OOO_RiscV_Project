@@ -12,7 +12,8 @@ module DFF #(
 	parameter WIDTH = 8  // default width is 8 bits
 ) (
 	input  logic              clk,
-	input  logic              rst,  // synchronous reset
+	input  logic              rst,     // synchronous reset
+	input  logic              enable,  // enable signal
 	input  logic [WIDTH-1:0]  in,
 	output logic [WIDTH-1:0]  out
 );
@@ -20,8 +21,9 @@ module DFF #(
 	always_ff @(posedge clk) begin
 		if (rst)
 			out <= '0;       // reset all bits to 0
-		else
-			out <= in;
+		else if (enable)
+			out <= in;       // update only when enable is high
 	end
 
 endmodule
+

@@ -17,9 +17,10 @@ module IFU_TB #() ();
 	//DUT output
 	reg [31:0] Instruction_Code [`FETCH_WIDTH-1:0];
 	reg [`INST_ADDR_WIDTH-1:0] pc , pc_plus_4;
+	reg stall;
 	
 	//DUT
-	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , Instruction_Code , pc , pc_plus_4 );
+	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , stall ,Instruction_Code , pc , pc_plus_4 );
 	
 	
 	//Setting Up waveform
@@ -55,17 +56,18 @@ module IFU_TB #() ();
 			sb_type_addr   = 0 ;
 			uj_type_addr   = 0 ;
 			jalr_type_addr = 0 ;
+			stall 		   = 0 ;
 			//first cycle pc+4
-			#40 next_pc_sel = pc_plus_4;
+			#40 next_pc_sel = pc_plus_4_t;
 			//second cycle sb_type
 			#40 next_pc_sel = sb ;
 				sb_type_addr = 20;
 			//third cycle UJ type
-			#40 next_pc_sel = uj ;
+			#40 next_pc_sel  = uj ;
 				uj_type_addr = 24;
 			//fourth cycle JALR type
 			#40 next_pc_sel = jalr ;
-			jalr_type_addr = 16;
+				jalr_type_addr = 16;
 			//fifth cycle UJ type
 			#40 next_pc_sel = uj ;
 				uj_type_addr = 0;

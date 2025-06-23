@@ -9,24 +9,24 @@
 `timescale 1ns/1ns
 
 module ARCH_REG_FILE #(
-	ARCH_REG_NUM_WIDTH 	   = `ARCH_REG_NUM_WIDTH, 						// Number of architecture registers
-	PHYSICAL_REG_NUM_WIDTH = `PHYSICAL_REG_NUM_WIDTH					// width (number of bits) of the number of physical registers
+	ARCH_REG_NUM_WIDTH 	   = `ARCH_REG_NUM_WIDTH, 							// Number of architecture registers
+	PHYSICAL_REG_NUM_WIDTH = `PHYSICAL_REG_NUM_WIDTH						// width (number of bits) of the number of physical registers
 ) (
-	input clk,
-	input reset,
-	input [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num1, 					// **************** architecture ************//
-	input [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num2,					// ******************** W/R *****************//
-	input [ARCH_REG_NUM_WIDTH-1:0] arch_write_reg_num,					// **************** registers****************//
-	input regwrite,
+	input 										clk,
+	input 										reset,
+	input [ARCH_REG_NUM_WIDTH-1:0] 				arch_read_reg_num1, 		// **************** architecture ************//
+	input [ARCH_REG_NUM_WIDTH-1:0] 				arch_read_reg_num2,			// ******************** W/R *****************//
+	input [ARCH_REG_NUM_WIDTH-1:0] 				arch_write_reg_num,			// **************** registers****************//
+	input 										regwrite,
 	//inputs to free physical registers
-	input commit_valid,
-	input commit_with_write,
-	input [PHYSICAL_REG_NUM_WIDTH-1:0] commited_wr_register,
+	input 										commit_valid,
+	input 										commit_with_write,
+	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register,
 	
-	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num1, 		// ***************** physical ***************//
-	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num2,		// ******************** W/R *****************//
-	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_write_reg_num,			// **************** registers****************//
-	output logic 						      valid
+	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1, 			// ***************** physical ***************//
+	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2,			// ******************** W/R *****************//
+	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num,			// **************** registers****************//
+	output logic 						      	valid
 );
 
 	//local params in use
@@ -35,20 +35,20 @@ module ARCH_REG_FILE #(
 	
 	
 	//internal signals for the FIFO 
-	logic 													free_phy_registers_is_empty;
-	logic 													pop_free_phy_register ;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  					pop_free_phy_register_id ;
-	logic 													push_free_phy_register ;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 						push_free_phy_register_id ;
+	logic 										free_phy_registers_is_empty;
+	logic 										pop_free_phy_register ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  		pop_free_phy_register_id ;
+	logic 										push_free_phy_register ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			push_free_phy_register_id ;
 	
 
 	//mapping of the arch-phy registers
-	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 						arch_phy_mapping 		[(1<<ARCH_REG_NUM_WIDTH)-1:0];
-	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 						arch_phy_mapping_next 	[(1<<ARCH_REG_NUM_WIDTH)-1:0];
+	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_phy_mapping 		[(1<<ARCH_REG_NUM_WIDTH)-1:0];
+	reg [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_phy_mapping_next 	[(1<<ARCH_REG_NUM_WIDTH)-1:0];
 	
 	//array to tell the previous physical register that was in use 
-	reg [PHYSICAL_REG_NUM_WIDTH :0] 						phy_register_old 	   [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
-	reg [PHYSICAL_REG_NUM_WIDTH :0] 						phy_register_old_next  [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
+	reg [PHYSICAL_REG_NUM_WIDTH :0] 			phy_register_old 	   [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
+	reg [PHYSICAL_REG_NUM_WIDTH :0] 			phy_register_old_next  [(1<<PHYSICAL_REG_NUM_WIDTH)-1 :0] ;
 	
 	
 	//instantiation of the free physical register 

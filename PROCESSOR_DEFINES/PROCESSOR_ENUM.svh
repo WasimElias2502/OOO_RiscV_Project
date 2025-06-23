@@ -9,7 +9,7 @@
 
 //****************** Instruction Fetch Unit Enum *************************//
 
-typedef enum {sb , uj , jalr , pc_plus_4} next_pc_t;
+typedef enum {sb , uj , jalr , pc_plus_4_t} next_pc_t;
 
 
 //******************** Decode & Register Renaming Defines ******************//
@@ -24,12 +24,14 @@ typedef enum bit[`OPCODE_WIDTH-1:0] {
 }	opcode_t ;
 
 
-typedef bit[`FUNC3_WIDTH-1 :0] func3_t  ;
-typedef bit[`FUNC7_WIDTH-1 :0] func7_t  ;
+typedef bit[`FUNC3_WIDTH-1 :0] 						func3_t  ;
+typedef bit[`FUNC7_WIDTH-1 :0] 						func7_t  ;
 
-typedef enum {src_reg2 , immediate }			alu_src_t ;
-typedef enum {add_op ,sub_op ,sll_op,slt_op ,sltu_op, xor_op, srl_op, sra_op, or_op, and_op,
-			  eq_op , not_eq_op , less_than_op , greater_equal_than_op} alu_op_t ;
+typedef enum     {src_reg2 , immediate }			alu_src_t ;
+
+typedef enum bit [`ALU_OP_WIDTH-1:0]	{add_op ,sub_op ,sll_op,slt_op ,sltu_op, xor_op, srl_op, sra_op, or_op, and_op,
+			  							 eq_op , not_eq_op , less_than_op , greater_equal_than_op} alu_op_t ;
+
 typedef enum {no_mem_op ,mem_read , mem_write}  memory_op_t;
 
 typedef struct {
@@ -55,6 +57,6 @@ typedef struct {
 	bit [1:0]  							src_reg_status;
 	bit [`RS_TAG_WIDTH-1:0]				tag_src_reg1  ;
 	bit [`RS_TAG_WIDTH-1:0]				tag_src_reg2  ;
-	opcode_t 							opcode		  ;
+	//opcode_t 							opcode		  ;
 	
 } reservation_station_t;
