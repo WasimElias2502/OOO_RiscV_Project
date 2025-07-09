@@ -16,12 +16,12 @@ module IDU_WRAPPER #(
 
 ) (
 	
-	input 						clk,
-	input 						reset,
+	input 										clk,
+	input 										reset,
 
 	input [31:0] 				 				Instruction_Code [FETCH_WIDTH-1:0],
 	input [INST_ADDR_WIDTH-1:0] 				pc_in,
-	input [INST_ADDR_WIDTH-1:0] 				pc_plus_4_out,
+	input [INST_ADDR_WIDTH-1:0] 				pc_plus_4_in,
 	//inputs to free physical registers
 	input 										commit_valid,
 	input 										commit_with_write,
@@ -31,7 +31,7 @@ module IDU_WRAPPER #(
 	output control_t						  	control,
 	
 	//pc output
-	input [INST_ADDR_WIDTH-1:0] 				pc_out,
+	output [INST_ADDR_WIDTH-1:0] 				pc_out,
 	
 	
 	//arch ref file output
@@ -54,7 +54,6 @@ module IDU_WRAPPER #(
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_read_reg_num1_d; 			
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_read_reg_num2_d;			
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_write_reg_num_d;			
-	logic 							      		can_rename_d;
 	
 	//imm output
 	logic [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate_d;
@@ -64,26 +63,48 @@ module IDU_WRAPPER #(
 	logic 										dst_reg_active;
 	opcode_t 									opcode;
 	logic [INST_ADDR_WIDTH-1:0] 				pc_out_d;
+	func3_t										func3;
+	func7_t										func7;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_read_reg_num1;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_read_reg_num2;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_write_reg_num;
 
 
 
 
 //****************************** Control Unit Instantiation ********************************//
 
-	assign opcode  = Instruction_Code[`OPCODE_WIDTH-1:0];
+	assign opcode 	= opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]);
+	assign func3   	= Instruction_Code[0][14:12];
+	assign func7	= Instruction_Code[0][31:25];
 
 	CONTROL_UNIT control_unit (
 		
 		//inputs
 		.opcode(opcode),
-		.func3 (Instruction_Code[14:12]),
-		.func7 (Instruction_Code[31:25]),
+		.func3 (func3),
+		.func7 (func7),
 		
 		//outputs
 		.control(control_d)
 	);
 	
-	DFF #(`CTRL_WIDTH) 	ctrl_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(control_d) , .out(control));
+	
+	//DFF
+	always_ff @(posedge clk or posedge reset) begin
+		if (reset) begin
+			// Reset all fields
+			control.alu_src 	  <= src_reg2 ;
+			control.alu_op 		  <= add_op	;
+			control.is_branch_op  <= 1'b0;
+			control.memory_op	  <= no_mem_op;
+			control.reg_wb 		  <= 1'b0;
+		end
+		else begin
+			control <= control_d;
+		end
+	end
+
 	
 	
 //********************************** Program Counter ****************************************//
@@ -95,16 +116,19 @@ module IDU_WRAPPER #(
 
 //**************************** Arch Reg File Instantiation **********************************//
 
-	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type );
+	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type || opcode == Reset_type);
+	assign arch_read_reg_num1 = Instruction_Code[0][19:15];
+	assign arch_read_reg_num2 = Instruction_Code[0][24:20];
+	assign arch_write_reg_num = Instruction_Code[0][11:7];
 
 	ARCH_REG_FILE arch_reg_file (
 		
 		//inputs
 		.clk(clk),
 		.reset(reset),
-		.arch_read_reg_num1(Instruction_Code[19:15]),
-		.arch_read_reg_num2(Instruction_Code[24:20]),
-		.arch_write_reg_num(Instruction_Code[11:7]),
+		.arch_read_reg_num1(arch_read_reg_num1),
+		.arch_read_reg_num2(arch_read_reg_num2),
+		.arch_write_reg_num(arch_write_reg_num),
 		.regwrite(dst_reg_active),
 		.commit_valid(commit_valid),
 		.commit_with_write(commit_with_write),
@@ -114,7 +138,7 @@ module IDU_WRAPPER #(
 		.phy_read_reg_num1(phy_read_reg_num1_d),
 		.phy_read_reg_num2(phy_read_reg_num2_d),
 		.phy_write_reg_num(phy_write_reg_num_d),
-		.valid(can_rename_d)
+		.valid(can_rename)
 	);
 	
 	
@@ -123,12 +147,13 @@ module IDU_WRAPPER #(
 	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 (.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) , .out(phy_write_reg_num));
 	
 	
+	
 //**************************** Immediate Generator Instantiation ******************************//
 
 	IMM_GENERATOR imm_generator (
 		
 		//inputs
-		.Instruction_code(Instruction_Code),
+		.Instruction_code(Instruction_Code[0]),
 		
 		//outputs
 		.generated_immediate (generated_immediate_d)

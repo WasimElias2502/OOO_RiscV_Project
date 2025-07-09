@@ -8,6 +8,10 @@
 
 `timescale 1ns/1ns
 
+(* verilator_dpi = "off", verdiHierarchyHide = 1 *)
+
+
+
 module DFF #(
 	parameter WIDTH = 8  // default width is 8 bits
 ) (
@@ -18,7 +22,7 @@ module DFF #(
 	output logic [WIDTH-1:0]  out
 );
 
-	always_ff @(posedge clk) begin
+	always_ff @(posedge clk or posedge rst) begin
 		if (rst)
 			out <= '0;       // reset all bits to 0
 		else if (enable)

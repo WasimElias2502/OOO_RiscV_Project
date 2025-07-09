@@ -27,7 +27,7 @@ module IFU_WRAPPER #(
 
 //************************ Internal Signals **************************//
 
-	logic [31:0] 				Instruction_Code_d;
+	logic [31:0] 				Instruction_Code_d[FETCH_WIDTH-1:0];
 	logic [INST_ADDR_WIDTH-1:0] pc_out_d;
 	logic [INST_ADDR_WIDTH-1:0] pc_plus_4_out_d;
 
@@ -50,8 +50,19 @@ module IFU_WRAPPER #(
 	);
 	
 //************************ Flip Flop Output **************************//
-
-	DFF #(32) 				inst_ff 	(.clk(clk) , .rst(reset) , .enable(~stall) , .in(Instruction_Code_d) , .out(Instruction_Code));
+	genvar i;
+	generate
+	  for (i = 0; i < FETCH_WIDTH; i = i + 1) begin : gen_dff_array
+		DFF #(32) dff_inst (
+		  .clk		(clk),
+		  .rst		(reset),
+		  .enable	(~stall),
+		  .in		(Instruction_Code_d[i]),
+		  .out		(Instruction_Code[i])
+		);
+	  end
+	endgenerate
+	
 	DFF #(INST_ADDR_WIDTH) 	pc_ff 		(.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_out_d) , .out(pc_out));
 	DFF #(INST_ADDR_WIDTH) 	pc_plus4_ff (.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_plus_4_out_d) , .out(pc_plus_4_out));
 	

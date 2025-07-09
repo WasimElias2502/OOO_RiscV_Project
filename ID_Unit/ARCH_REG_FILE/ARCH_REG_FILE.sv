@@ -82,14 +82,14 @@ module ARCH_REG_FILE #(
 		phy_register_old_next = phy_register_old ;
 	
 		//allocate new register for WR
-		if(regwrite && !free_phy_registers_is_empty) begin
+		if(regwrite && !free_phy_registers_is_empty && !reset) begin
 			pop_free_phy_register = 1'b1; 
 			arch_phy_mapping_next[arch_write_reg_num]	    = pop_free_phy_register_id;
 			phy_register_old_next[pop_free_phy_register_id] = arch_phy_mapping[arch_write_reg_num]; // update old used register
 		end
 		
 		//got commited WR instruction
-		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF) begin
+		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF && !reset) begin
 			push_free_phy_register    = 1'b1;
 			push_free_phy_register_id = phy_register_old[commited_wr_register];
 			phy_register_old_next[commited_wr_register] = `NO_OLD_PRF;	
