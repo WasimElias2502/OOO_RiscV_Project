@@ -7,7 +7,7 @@
  *------------------------------------------------------------------------------*/
 
 module IFU_WRAPPER #(
-	FETCH_WIDTH = `FETCH_WIDTH, 				// Number of instruction to fetch
+	FETCH_WIDTH 	= `FETCH_WIDTH, 			// Number of instruction to fetch
 	INST_ADDR_WIDTH = `INST_ADDR_WIDTH			// Addess width of the instruction memory
 ) (
 	input 						clk,

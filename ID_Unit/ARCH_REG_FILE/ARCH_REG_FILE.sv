@@ -36,6 +36,7 @@ module ARCH_REG_FILE #(
 	
 	//internal signals for the FIFO 
 	logic 										free_phy_registers_is_empty;
+	logic										next_free_phy_registers_is_empty;
 	logic 										pop_free_phy_register ;
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  		pop_free_phy_register_id ;
 	logic 										push_free_phy_register ;
@@ -59,14 +60,15 @@ module ARCH_REG_FILE #(
 		.RESET_INITIAL_PUSH_START(IN_USE),
 		.RESET_INITIAL_PUSH_COUNT(NOT_IN_USE)
 		) free_phy_registers(
-			.clk(clk),
-			.reset(reset),
-			.wr_en (push_free_phy_register),
-			.wr_data (push_free_phy_register_id),
-			.full (),
-			.rd_en (pop_free_phy_register),
-			.rd_data (pop_free_phy_register_id),
-			.empty (free_phy_registers_is_empty)
+			.clk		(clk),
+			.reset		(reset),
+			.wr_en 		(push_free_phy_register),
+			.wr_data 	(push_free_phy_register_id),
+			.full 		(),
+			.rd_en 		(pop_free_phy_register),
+			.rd_data 	(pop_free_phy_register_id),
+			.empty   	(free_phy_registers_is_empty),
+			.next_empty	(next_free_phy_registers_is_empty)
 		);
 
 	
@@ -89,14 +91,14 @@ module ARCH_REG_FILE #(
 		end
 		
 		//got commited WR instruction
-		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF && !reset) begin
+		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF && !reset ) begin
 			push_free_phy_register    = 1'b1;
 			push_free_phy_register_id = phy_register_old[commited_wr_register];
 			phy_register_old_next[commited_wr_register] = `NO_OLD_PRF;	
 		end
 		
 		//not valid - cannot rename
-		valid = ~free_phy_registers_is_empty;
+		valid = ~free_phy_registers_is_empty && ~next_free_phy_registers_is_empty;
 		
 		//read register instruction
 		phy_read_reg_num1 = arch_phy_mapping[arch_read_reg_num1];

@@ -38,8 +38,8 @@ module ARCH_REG_FILE_TB #(
 	
 	//DUT
 	ARCH_REG_FILE #(
-		.ARCH_REG_NUM_WIDTH(ARCH_REG_NUM_WIDTH), 	   					// Number of architecture registers
-		.PHYSICAL_REG_NUM_WIDTH(PHYSICAL_REG_NUM_WIDTH) 				// width (number of bits) of the number of physical registers
+		.ARCH_REG_NUM_WIDTH(ARCH_REG_NUM_WIDTH), 	   				// Number of architecture registers
+		.PHYSICAL_REG_NUM_WIDTH(PHYSICAL_REG_NUM_WIDTH) 			// width (number of bits) of the number of physical registers
 	) arch_reg_file(
 		 .clk(clk),
 		 .reset(reset),
@@ -52,9 +52,9 @@ module ARCH_REG_FILE_TB #(
 		.commit_with_write(commit_with_write),
 		.commited_wr_register(commited_wr_register),
 		
-		.phy_read_reg_num1(phy_read_reg_num1), 		// ***************** physical ***************//
-		.phy_read_reg_num2(phy_read_reg_num2),		// ******************** W/R *****************//
-		.phy_write_reg_num(phy_write_reg_num)			// **************** registers****************//
+		.phy_read_reg_num1(phy_read_reg_num1), 						// ***************** physical ***************//
+		.phy_read_reg_num2(phy_read_reg_num2),						// ******************** W/R *****************//
+		.phy_write_reg_num(phy_write_reg_num)						// **************** registers****************//
 	);
 	
 	//Setting Up waveform
