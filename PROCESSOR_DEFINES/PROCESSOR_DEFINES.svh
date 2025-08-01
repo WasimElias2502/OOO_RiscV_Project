@@ -8,7 +8,7 @@
 `ifndef  __PROCESSOR_DEFINES__
 `define  __PROCESSOR_DEFINES__
 
-	//****************** General Defines ****************************************//
+	//*************************** General Defines *******************************//
 	
 	
 	`define INST_ADDR_WIDTH 			6						// Addess width of the instruction memory
@@ -23,8 +23,8 @@
 	
 	
 	//******************** Decode & Register Renaming Defines *******************//
-	`define ARCH_REG_NUM_WIDTH			5					   
-	`define PHYSICAL_REG_NUM_WIDTH		6
+	`define ARCH_REG_NUM_WIDTH			2					   
+	`define PHYSICAL_REG_NUM_WIDTH		3
 	`define NO_OLD_PRF 					1<<`PHYSICAL_REG_NUM_WIDTH
 	`define IMM_WIDTH					12
 	`define OPCODE_WIDTH			    7
