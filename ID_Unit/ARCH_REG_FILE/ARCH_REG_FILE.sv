@@ -98,7 +98,7 @@ module ARCH_REG_FILE #(
 		end
 		
 		//not valid - cannot rename
-		valid = ~free_phy_registers_is_empty && ~next_free_phy_registers_is_empty;
+		valid =  ~next_free_phy_registers_is_empty;
 		
 		//read register instruction
 		phy_read_reg_num1 = arch_phy_mapping[arch_read_reg_num1];

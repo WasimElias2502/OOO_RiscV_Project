@@ -58,6 +58,9 @@ module IDU_WRAPPER #(
 	//imm output
 	logic [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate_d;
 	
+	//cannot rename (arch regfile -> control unit)
+	logic 										can_rename_to_ctrl_unit;
+	
 //****************************** Internal Control Signals  *********************************//
 
 	logic 										dst_reg_active;
@@ -74,7 +77,7 @@ module IDU_WRAPPER #(
 
 //****************************** Control Unit Instantiation ********************************//
 
-	assign opcode 	= opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]);
+	assign opcode 	= (can_rename_to_ctrl_unit) ? opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]) : NOP;
 	assign func3   	= Instruction_Code[0][14:12];
 	assign func7	= Instruction_Code[0][31:25];
 
@@ -116,7 +119,7 @@ module IDU_WRAPPER #(
 
 //**************************** Arch Reg File Instantiation **********************************//
 
-	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type || opcode == Reset_type);
+	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type || opcode == NOP);
 	assign arch_read_reg_num1 = Instruction_Code[0][19:15];
 	assign arch_read_reg_num2 = Instruction_Code[0][24:20];
 	assign arch_write_reg_num = Instruction_Code[0][11:7];
@@ -142,9 +145,10 @@ module IDU_WRAPPER #(
 	);
 	
 	
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num1_d) , .out(phy_read_reg_num1));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num2_d) , .out(phy_read_reg_num2));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 (.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) , .out(phy_write_reg_num));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num1_d) , .out(phy_read_reg_num1));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num2_d) , .out(phy_read_reg_num2));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) , .out(phy_write_reg_num));
+	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 , .out(can_rename_to_ctrl_unit));
 	
 	
 	

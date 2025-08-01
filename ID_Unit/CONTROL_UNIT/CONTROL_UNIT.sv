@@ -21,11 +21,23 @@ module CONTROL_UNIT #() (
 
 
 	always @(func3 or func7 or opcode) begin
-		
+	
+	//******************** NOP ****************************************//
+	
+		if(opcode == NOP) begin
+			control.alu_src 		= src_reg2;
+			control.is_branch_op 	= 1'b0;
+			control.memory_op 		= no_mem_op;
+			control.reg_wb 			= 1'b0;
+			control.alu_op 			= add_op;
+					
+			
+		end//else if(opcode == NOP)
+	
 		
 	//****************** R_type ***************************************//
 	
-		if(opcode == R_type) begin
+		else if(opcode == R_type) begin
 			
 			control.alu_src 		= src_reg2;
 			control.is_branch_op 	= 1'b0;
@@ -129,6 +141,7 @@ module CONTROL_UNIT #() (
 			endcase	
 			
 		end//else if(opcode == SB_type)	
+		
 		
 		
 	end //always @(funct3 or funct7 or opcode)

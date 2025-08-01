@@ -16,7 +16,7 @@
 	//******************** Decode & Register Renaming Defines ******************//
 	
 	typedef enum bit[`OPCODE_WIDTH-1:0] {
-		Reset_type 	= 7'b0000000,
+		NOP 		= 7'b0000000,
 		R_type 		= 7'b0110011, 
 		I_type_load = 7'b0000011,
 		I_type_arth = 7'b0010011,

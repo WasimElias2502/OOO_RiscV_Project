@@ -46,6 +46,12 @@ module INTEGRATION_TB #(
 	
 	//ALU to IFU wires
 	reg[1:0] 									next_pc_sel;
+	
+	//**************************************** Testing Signals **********************************************//
+	
+	logic 										commit_valid_TEST					;
+	logic 										commit_with_write_TEST				;
+	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		commited_wr_register_TEST			;
 			
 
 	
@@ -77,9 +83,9 @@ module INTEGRATION_TB #(
 		.Instruction_Code			(Instruction_Code),
 		.pc_in						(pc_ifu_idu),
 		.pc_plus_4_in				(pc_plus_4),
-		.commit_valid				(0),
-		.commit_with_write			(0),
-		.commited_wr_register		(0),
+		.commit_valid				(commit_valid_TEST),
+		.commit_with_write			(commit_with_write_TEST),
+		.commited_wr_register		(commited_wr_register_TEST),
 		.control					(control_idu_phyRegfile),
 		.pc_out						(pc_idu_phyRegfile),
 		.phy_read_reg_num1			(phy_read_reg_num1_idu_phyRegfile),
@@ -136,6 +142,22 @@ module INTEGRATION_TB #(
 	initial 
 		begin
 			next_pc_sel = pc_plus_4_t;	
+		end
+	
+	initial 
+		begin
+			commit_valid_TEST 			= 1'b0		;
+			commit_with_write_TEST		= 1'b0		;
+			commited_wr_register_TEST	= 0			;
+			#261
+			commit_valid_TEST 			= 1'b1		;
+			commit_with_write_TEST		= 1'b1		;
+			commited_wr_register_TEST	= 5			;
+			#40
+			commit_valid_TEST 			= 1'b1		;
+			commit_with_write_TEST		= 1'b1		;
+			commited_wr_register_TEST	= 6			;
+				
 		end
 	
 	
