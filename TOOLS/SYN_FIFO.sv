@@ -29,7 +29,8 @@ module SYN_FIFO #(
 	// Read Interface
 	input  logic                   rd_en,      // Read enable
 	output logic [DATA_WIDTH-1:0]  rd_data,    // Data read
-	output logic                   empty       // FIFO is empty
+	output logic                   empty,      // FIFO is empty
+	output logic 				   next_empty
 );
 
 	localparam FIFO_DEPTH = 1 << ADDR_WIDTH; // Calculate FIFO depth
@@ -83,6 +84,7 @@ module SYN_FIFO #(
 	// Full and Empty flags
 	assign full  = (fill_count_reg == FIFO_DEPTH);
 	assign empty = (fill_count_reg == 0);
+	assign next_empty = (fill_count_next == 0);
 
 
 	// --- Sequential Logic (Registers and Memory Updates) ---

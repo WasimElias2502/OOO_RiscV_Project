@@ -54,7 +54,7 @@ module IFU #(
 					PC <= PC;
 				end
 				
-			end // else begin always @(posedge clk , posedge reset)	
-		end // 
+			end // else begin 
+		end // always @(posedge clk , posedge reset)
 
 endmodule

@@ -70,7 +70,11 @@ module IFU_TB #() ();
 				jalr_type_addr = 16;
 			//fifth cycle UJ type
 			#40 next_pc_sel = uj ;
-				uj_type_addr = 0;
+				uj_type_addr = 0 ;
+			#39 stall 		= 1	 ;
+			#1
+				next_pc_sel = uj ;
+				uj_type_addr = 8 ;
 			
 			
 		end
