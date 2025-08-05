@@ -20,18 +20,18 @@ module INTEGRATION_TB #(
 	//IFU to IDU wires
 	bit 	[31:0] 								Instruction_Code [`FETCH_WIDTH-1:0]	;
 	bit 	[`INST_ADDR_WIDTH-1:0] 				pc_ifu_idu							;
-	bit 	[`INST_ADDR_WIDTH-1:0] 				pc_plus_4							; 
+	bit 	[`INST_ADDR_WIDTH-1:0] 				pc_plus_4							;
 	
 	//IDU to IFU wires
 	logic 						      			can_rename;
 	
 	//IDU to Physical register wires
 	logic 	[`INST_ADDR_WIDTH-1:0] 				pc_idu_phyRegfile					;
-	control_t						  			control_idu_phyRegfile				;	
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num1_idu_phyRegfile	; 			// ***************** physical ***************//
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num2_idu_phyRegfile	;			// ******************** W/R *****************//
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_write_reg_num_idu_phyRegfile	;			// **************** registers****************//
-	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate_idu_phyRegfile	;
+	control_t						  			control_idu_phyRegfile				;
+	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num1_idu_phyRegfile	;
+	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num2_idu_phyRegfile	;
+	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_write_reg_num_idu_phyRegfile	;
+	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_idu_phyRegfile	;
 	
 	//Physical Regfile to Reservation station wires
 	logic 	[`REG_VAL_WIDTH-1:0]				src_val1_phyRegfile_rs				;
@@ -44,14 +44,18 @@ module INTEGRATION_TB #(
 	logic	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_phyRegfile_rs 	;
 	
 	
-	//ALU to IFU wires
-	reg[1:0] 									next_pc_sel;
+	//Branch Misprediction Unit wires
+	next_pc_t 									next_pc_sel							;
+	logic										flush								;
 	
 	//**************************************** Testing Signals **********************************************//
 	
 	logic 										commit_valid_TEST					;
 	logic 										commit_with_write_TEST				;
 	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		commited_wr_register_TEST			;
+	logic										is_branch_op_TEST					;
+	logic										is_branch_taken_TEST				;
+	
 			
 
 	
@@ -86,6 +90,7 @@ module INTEGRATION_TB #(
 		.commit_valid				(commit_valid_TEST),
 		.commit_with_write			(commit_with_write_TEST),
 		.commited_wr_register		(commited_wr_register_TEST),
+		.flush						(flush),
 		.control					(control_idu_phyRegfile),
 		.pc_out						(pc_idu_phyRegfile),
 		.phy_read_reg_num1			(phy_read_reg_num1_idu_phyRegfile),
@@ -110,6 +115,7 @@ module INTEGRATION_TB #(
 		.control_in					(control_idu_phyRegfile),
 		.pc_in						(pc_idu_phyRegfile),
 		.generated_immediate_in		(generated_immediate_idu_phyRegfile),
+		.flush						(flush),
 		
 		.src_val1					(src_val1_phyRegfile_rs),
 		.src_val2					(src_val2_phyRegfile_rs),
@@ -121,9 +127,19 @@ module INTEGRATION_TB #(
 		.generated_immediate_out	(generated_immediate_phyRegfile_rs)
 
 	);
+	
+	
+	//***************************** Branch Misprediction Unit Instantiation***************************************//
 
+	BRANCH_MISPRED_UNIT branch_mispred_unit(
+		.is_branch_op				(is_branch_op_TEST),
+		.branch_taken				(is_branch_taken_TEST),
+		
+		.flush						(flush),
+		.next_pc_sel				(next_pc_sel)
+	);
 
-	//****************************************** Stimulus************** *****************************************//
+	//****************************************** Stimulus********************************************************//
 	
 	initial begin
 		clk = 1'b0; // Ensure clk is explicitly 0 at time 0
@@ -139,17 +155,16 @@ module INTEGRATION_TB #(
 			#400 reset = 1'b1;
 		end
 	
-	initial 
-		begin
-			next_pc_sel = pc_plus_4_t;	
-		end
+
 	
 	initial 
 		begin
+			is_branch_op_TEST			= 1'b0		;
+			is_branch_taken_TEST		= 1'b0		;
 			commit_valid_TEST 			= 1'b0		;
 			commit_with_write_TEST		= 1'b0		;
 			commited_wr_register_TEST	= 0			;
-			#261
+			#101
 			commit_valid_TEST 			= 1'b1		;
 			commit_with_write_TEST		= 1'b1		;
 			commited_wr_register_TEST	= 5			;
@@ -157,7 +172,13 @@ module INTEGRATION_TB #(
 			commit_valid_TEST 			= 1'b1		;
 			commit_with_write_TEST		= 1'b1		;
 			commited_wr_register_TEST	= 6			;
-				
+			#40
+			is_branch_op_TEST			= 1'b1		;
+			is_branch_taken_TEST		= 1'b1		;
+			#40
+			is_branch_op_TEST			= 1'b1		;
+			is_branch_taken_TEST		= 1'b0		;
+	
 		end
 	
 	
