@@ -27,9 +27,20 @@ module IFU #(
 
 	
 	reg [INST_ADDR_WIDTH-1 : 0] PC = {INST_ADDR_WIDTH{1'b0}};
+	logic [31:0] Instruction_Code_from_mem [FETCH_WIDTH-1:0];
+	
+	
+	//FLUSH if next pc sel is not pc+4
+	genvar i;
+	generate
+		for (i = 0; i < FETCH_WIDTH; i++) begin : assign_instr
+			assign Instruction_Code[i] = 
+				(next_pc_sel != pc_plus_4_t) ? {25'b0, NOP} : Instruction_Code_from_mem[i]; // flush with NOP
+		end
+	endgenerate
 	
 	//assign pc outputs
-	INST_MEM inst_mem(PC , reset , Instruction_Code);
+	INST_MEM inst_mem(PC , reset , Instruction_Code_from_mem);
 	assign pc_out = PC;	
 	assign pc_plus_4_out = PC+4;
 	

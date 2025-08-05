@@ -23,8 +23,8 @@
 	
 	
 	//******************** Decode & Register Renaming Defines *******************//
-	`define ARCH_REG_NUM_WIDTH			2					   
-	`define PHYSICAL_REG_NUM_WIDTH		3
+	`define ARCH_REG_NUM_WIDTH			5					   
+	`define PHYSICAL_REG_NUM_WIDTH		6
 	`define NO_OLD_PRF 					1<<`PHYSICAL_REG_NUM_WIDTH
 	`define IMM_WIDTH					12
 	`define OPCODE_WIDTH			    7
@@ -36,6 +36,11 @@
 	//******************** Reservation Station Defines **************************//
 	`define RS_TAG_WIDTH				`PHYSICAL_REG_NUM_WIDTH
 	`define ADD_RS_NUM					3
+	
+	
+	//******************** Branch Misprediction Defines *************************//
+	`define NOP_CONTROL '{alu_src:src_reg2, alu_op:add_op, is_branch_op:0, memory_op:no_mem_op, reg_wb:0}
+
 
 `endif
 

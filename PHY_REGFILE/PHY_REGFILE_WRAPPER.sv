@@ -24,6 +24,7 @@ module PHY_REGFILE_WRAPPER #(
 	input 	control_t						  	control_in				,
 	input 	[`INST_ADDR_WIDTH-1:0] 				pc_in					, 
 	input 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_in	,
+	input										flush					,
 	
 	//output
 	output 	[`REG_VAL_WIDTH-1:0]				src_val1				,
@@ -42,7 +43,11 @@ module PHY_REGFILE_WRAPPER #(
 
 	logic 	[`REG_VAL_WIDTH-1:0]				src_val1_d	;
 	logic 	[`REG_VAL_WIDTH-1:0]				src_val2_d	;
-		
+	
+//*********************************************** control value -> FF ***********************************************	
+	
+	control_t						  			control_d	;
+	assign control_d = (flush)? `NOP_CONTROL : control_in	;
 
 
 //******************************************** PHY REGFILE INSTANTIATION ********************************************
@@ -86,7 +91,7 @@ module PHY_REGFILE_WRAPPER #(
 			control_out.reg_wb 		  <= 1'b0;
 		end
 		else begin
-			control_out <= control_in;
+			control_out <= control_d;
 		end
 	end
 

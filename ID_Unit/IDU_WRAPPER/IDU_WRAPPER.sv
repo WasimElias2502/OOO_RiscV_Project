@@ -26,6 +26,7 @@ module IDU_WRAPPER #(
 	input 										commit_valid,
 	input 										commit_with_write,
 	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register,
+	input 										flush,
 	
 	//control unit output
 	output control_t						  	control,
@@ -77,7 +78,7 @@ module IDU_WRAPPER #(
 
 //****************************** Control Unit Instantiation ********************************//
 
-	assign opcode 	= (can_rename_to_ctrl_unit) ? opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]) : NOP;
+	assign opcode 	= (can_rename_to_ctrl_unit && ~flush) ? opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]) : NOP;
 	assign func3   	= Instruction_Code[0][14:12];
 	assign func7	= Instruction_Code[0][31:25];
 
