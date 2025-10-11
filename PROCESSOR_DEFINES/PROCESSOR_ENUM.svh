@@ -35,7 +35,7 @@
 	
 	typedef enum {no_mem_op ,mem_read , mem_write}  memory_op_t;
 	
-	typedef struct {
+	typedef struct packed{
 		
 		alu_src_t 	alu_src;
 		alu_op_t  	alu_op;
@@ -50,16 +50,20 @@
 	
 	//****************** Reservation Station Unit Enum *************************//
 	
-	typedef struct {
-		
-		bit 								busy          ;
-		bit [31:0] 							src_val1      ;
-		bit [31:0] 							src_val2	  ;
-		bit [1:0]  							src_reg_status;
-		bit [`RS_TAG_WIDTH-1:0]				tag_src_reg1  ;
-		bit [`RS_TAG_WIDTH-1:0]				tag_src_reg2  ;
-		//opcode_t 							opcode		  ;
+	typedef struct packed {
+
+		bit [`REG_VAL_WIDTH-1:0] 			src_reg1_val  ;
+		bit [`REG_VAL_WIDTH-1:0] 			src_reg2_val  ;
+		bit [`REG_VAL_WIDTH-1:0]			dst_reg_val   ;		 
+		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg1_addr ;
+		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg2_addr ;
+		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	dest_reg_addr ;
+		bit [`REG_VAL_WIDTH-1:0]			immediate	  ;	
+		control_t 							control		  ;
+		bit									valid_entry	  ;	
 		
 	} reservation_station_t;
+	
+	typedef enum bit{ not_valid = 1'b0 , valid = 1'b1} RS_reg_status;
 	
 `endif

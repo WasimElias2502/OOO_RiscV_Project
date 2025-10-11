@@ -15,23 +15,6 @@ module INTEGRATION_TB #(
 
 	//reset & clk
 	logic 										clk , reset							;
-
-	
-	//IFU to IDU wires
-	bit 	[31:0] 								Instruction_Code [`FETCH_WIDTH-1:0]	;
-	bit 	[`INST_ADDR_WIDTH-1:0] 				pc_ifu_idu							;
-	bit 	[`INST_ADDR_WIDTH-1:0] 				pc_plus_4							;
-	
-	//IDU to IFU wires
-	logic 						      			can_rename;
-	
-	//IDU to Physical register wires
-	logic 	[`INST_ADDR_WIDTH-1:0] 				pc_idu_phyRegfile					;
-	control_t						  			control_idu_phyRegfile				;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num1_idu_phyRegfile	;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_read_reg_num2_idu_phyRegfile	;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		phy_write_reg_num_idu_phyRegfile	;
-	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_idu_phyRegfile	;
 	
 	//Physical Regfile to Reservation station wires
 	logic 	[`REG_VAL_WIDTH-1:0]				src_val1_phyRegfile_rs				;
@@ -58,8 +41,10 @@ module INTEGRATION_TB #(
 	
 			
 
+	//******************************************* Interfaces ************************************************// 
 	
-	
+	IF2IDU_IF						IF2IDU_if();
+	IDU2PHY_REGFILE_IF 				IDU2PHY_REGFILE_if();
 	
 	
 	
@@ -72,10 +57,10 @@ module INTEGRATION_TB #(
 		.SB_Type_addr				(0),
 		.UJ_Type_addr				(0),
 		.JALR_Type_addr				(0),
-		.stall						(~can_rename),
-		.Instruction_Code			(Instruction_Code),
-		.pc_out						(pc_ifu_idu),
-		.pc_plus_4_out				(pc_plus_4)
+		.stall						(~IF2IDU_if.can_rename),
+		.Instruction_Code			(IF2IDU_if.Instruction_Code),
+		.pc_out						(IF2IDU_if.pc),
+		.pc_plus_4_out				(IF2IDU_if.pc_plus_4)
 	);
 	
 
@@ -84,20 +69,20 @@ module INTEGRATION_TB #(
 	IDU_WRAPPER decode_unit (
 		.clk						(clk),
 		.reset						(reset),
-		.Instruction_Code			(Instruction_Code),
-		.pc_in						(pc_ifu_idu),
-		.pc_plus_4_in				(pc_plus_4),
+		.Instruction_Code			(IF2IDU_if.Instruction_Code),
+		.pc_in						(IF2IDU_if.pc),
+		.pc_plus_4_in				(IF2IDU_if.pc_plus_4),
 		.commit_valid				(commit_valid_TEST),
 		.commit_with_write			(commit_with_write_TEST),
 		.commited_wr_register		(commited_wr_register_TEST),
 		.flush						(flush),
-		.control					(control_idu_phyRegfile),
-		.pc_out						(pc_idu_phyRegfile),
-		.phy_read_reg_num1			(phy_read_reg_num1_idu_phyRegfile),
-		.phy_read_reg_num2			(phy_read_reg_num2_idu_phyRegfile),
-		.phy_write_reg_num			(phy_write_reg_num_idu_phyRegfile),
-		.can_rename					(can_rename),
-		.generated_immediate		(generated_immediate_idu_phyRegfile)
+		.control					(IDU2PHY_REGFILE_if.control),
+		.pc_out						(IDU2PHY_REGFILE_if.pc),
+		.phy_read_reg_num1			(IDU2PHY_REGFILE_if.phy_read_reg_num1),
+		.phy_read_reg_num2			(IDU2PHY_REGFILE_if.phy_read_reg_num2),
+		.phy_write_reg_num			(IDU2PHY_REGFILE_if.phy_write_reg_num),
+		.can_rename					(IF2IDU_if.can_rename),
+		.generated_immediate		(IDU2PHY_REGFILE_if.generated_immediate)
 	);
 	
 	
@@ -106,15 +91,15 @@ module INTEGRATION_TB #(
 	PHY_REGFILE_WRAPPER phy_regfile(
 		.clk						(clk),
 		.reset						(reset),
-		.src_phy_reg1_in			(phy_read_reg_num1_idu_phyRegfile),
-		.src_phy_reg2_in			(phy_read_reg_num2_idu_phyRegfile),
+		.src_phy_reg1_in			(IDU2PHY_REGFILE_if.phy_read_reg_num1),
+		.src_phy_reg2_in			(IDU2PHY_REGFILE_if.phy_read_reg_num2),
 		.wr_commit_reg				(0),
 		.commit_wr_en				(0),
 		.commit_wr_val				(0),
-		.dst_phy_reg_in				(phy_write_reg_num_idu_phyRegfile),
-		.control_in					(control_idu_phyRegfile),
-		.pc_in						(pc_idu_phyRegfile),
-		.generated_immediate_in		(generated_immediate_idu_phyRegfile),
+		.dst_phy_reg_in				(IDU2PHY_REGFILE_if.phy_write_reg_num),
+		.control_in					(IDU2PHY_REGFILE_if.control),
+		.pc_in						(IDU2PHY_REGFILE_if.pc),
+		.generated_immediate_in		(IDU2PHY_REGFILE_if.generated_immediate),
 		.flush						(flush),
 		
 		.src_val1					(src_val1_phyRegfile_rs),
