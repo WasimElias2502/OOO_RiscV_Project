@@ -9,6 +9,7 @@ interface IF2IDU_IF ;
 	logic [`INST_ADDR_WIDTH-1:0] 				pc;
 	logic [`INST_ADDR_WIDTH-1:0] 				pc_plus_4;
 	logic 										can_rename;
+	logic 										valid_inst;
 
 endinterface
 

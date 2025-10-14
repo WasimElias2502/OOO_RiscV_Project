@@ -16,17 +16,6 @@ module INTEGRATION_TB #(
 	//reset & clk
 	logic 										clk , reset							;
 	
-	//Physical Regfile to Reservation station wires
-	logic 	[`REG_VAL_WIDTH-1:0]				src_val1_phyRegfile_rs				;
-	logic 	[`REG_VAL_WIDTH-1:0]				src_val2_phyRegfile_rs				;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	phy_read_reg_num1_phyRegfile_rs		;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	phy_read_reg_num2_phyRegfile_rs		;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	phy_write_reg_num_phyRegfile_rs		;
-	control_t						  			control_phyRegfile_rs				;
-	logic 	[`INST_ADDR_WIDTH-1:0] 				pc_phyRegfile_rs					;
-	logic	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_phyRegfile_rs 	;
-	
-	
 	//Branch Misprediction Unit wires
 	next_pc_t 									next_pc_sel							;
 	logic										flush								;
@@ -43,8 +32,12 @@ module INTEGRATION_TB #(
 
 	//******************************************* Interfaces ************************************************// 
 	
-	IF2IDU_IF						IF2IDU_if();
-	IDU2PHY_REGFILE_IF 				IDU2PHY_REGFILE_if();
+	IF2IDU_IF									IF2IDU_if();
+	IDU2PHY_REGFILE_IF 							IDU2PHY_REGFILE_if();
+	PHY_REGFILE2RS_IF							PHY_REGFILE2RS_if();
+	FU_IF# ( .NUM_OF_FU(`NUM_OF_ALUS))			ALU_if();
+	FU_IF# ( .NUM_OF_FU(`NUM_OF_MEM))			MEM_if();
+	CDB_IF										CDB_if();
 	
 	
 	
@@ -60,7 +53,8 @@ module INTEGRATION_TB #(
 		.stall						(~IF2IDU_if.can_rename),
 		.Instruction_Code			(IF2IDU_if.Instruction_Code),
 		.pc_out						(IF2IDU_if.pc),
-		.pc_plus_4_out				(IF2IDU_if.pc_plus_4)
+		.pc_plus_4_out				(IF2IDU_if.pc_plus_4),
+		.new_valid_inst				(IF2IDU_if.valid_inst)
 	);
 	
 
@@ -76,13 +70,16 @@ module INTEGRATION_TB #(
 		.commit_with_write			(commit_with_write_TEST),
 		.commited_wr_register		(commited_wr_register_TEST),
 		.flush						(flush),
+		.new_valid_in				(IF2IDU_if.valid_inst),
+		
 		.control					(IDU2PHY_REGFILE_if.control),
 		.pc_out						(IDU2PHY_REGFILE_if.pc),
 		.phy_read_reg_num1			(IDU2PHY_REGFILE_if.phy_read_reg_num1),
 		.phy_read_reg_num2			(IDU2PHY_REGFILE_if.phy_read_reg_num2),
 		.phy_write_reg_num			(IDU2PHY_REGFILE_if.phy_write_reg_num),
 		.can_rename					(IF2IDU_if.can_rename),
-		.generated_immediate		(IDU2PHY_REGFILE_if.generated_immediate)
+		.generated_immediate		(IDU2PHY_REGFILE_if.generated_immediate),
+		.new_valid_inst_out			(IDU2PHY_REGFILE_if.valid_inst)
 	);
 	
 	
@@ -101,16 +98,36 @@ module INTEGRATION_TB #(
 		.pc_in						(IDU2PHY_REGFILE_if.pc),
 		.generated_immediate_in		(IDU2PHY_REGFILE_if.generated_immediate),
 		.flush						(flush),
+		.valid_inst_in				(IDU2PHY_REGFILE_if.valid_inst),
 		
-		.src_val1					(src_val1_phyRegfile_rs),
-		.src_val2					(src_val2_phyRegfile_rs),
-		.src_phy_reg1_out			(phy_read_reg_num1_phyRegfile_rs),
-		.src_phy_reg2_out			(phy_read_reg_num2_phyRegfile_rs),
-		.dst_phy_reg_out			(phy_write_reg_num_phyRegfile_rs),
-		.control_out				(control_phyRegfile_rs),
+		.src_val1					(PHY_REGFILE2RS_if.src_reg1_val),
+		.src_val2					(PHY_REGFILE2RS_if.src_reg2_val),
+		.src_phy_reg1_out			(PHY_REGFILE2RS_if.src_reg1_addr),
+		.src_phy_reg2_out			(PHY_REGFILE2RS_if.src_reg2_addr),
+		.dst_phy_reg_out			(PHY_REGFILE2RS_if.dst_reg_addr),
+		.control_out				(PHY_REGFILE2RS_if.control),
 		.pc_out						(pc_phyRegfile_rs),
-		.generated_immediate_out	(generated_immediate_phyRegfile_rs)
+		.generated_immediate_out	(PHY_REGFILE2RS_if.immediate),
+		.valid_inst_out				(PHY_REGFILE2RS_if.new_valid_inst)
 
+	);
+	
+	//************************************ Reservation Station Unit **********************************************//
+	
+	RS_UNIT_WRAPPER reservation_stations_unit(
+		.clk						(clk),
+		.reset						(reset),
+		.control					(PHY_REGFILE2RS_if.control),
+		.src_reg1_val				(PHY_REGFILE2RS_if.src_reg1_val),
+		.src_reg2_val				(PHY_REGFILE2RS_if.src_reg2_val),
+		.dst_reg_addr				(PHY_REGFILE2RS_if.dst_reg_addr),
+		.src_reg1_addr				(PHY_REGFILE2RS_if.src_reg1_addr),
+		.src_reg2_addr				(PHY_REGFILE2RS_if.src_reg2_addr),
+		.immediate					(PHY_REGFILE2RS_if.immediate),
+		.new_valid_inst				(PHY_REGFILE2RS_if.new_valid_inst),
+		.cdb_if						(CDB_if.slave),
+		.alu_if						(ALU_if.RS),
+		.mem_if						(MEM_if.RS)
 	);
 	
 	
@@ -126,6 +143,41 @@ module INTEGRATION_TB #(
 
 	//****************************************** Stimulus********************************************************//
 	
+	task automatic simulate_single_alu(input int fu_id);
+		
+		
+		$display("[%0t] Task forked for FU_ID = %0d. Now waiting for valid signal...", $time, fu_id);
+		forever begin
+			//if ALU is asserted with  inst
+			@(posedge ALU_if.valid[fu_id]);
+			
+			//Make fu not ready for a couple of cycles starting from next cycle
+			ALU_if.ready[fu_id] <= 1'b0;
+			
+			@(posedge clk);
+			@(posedge clk);
+			@(posedge clk);
+			@(posedge clk);
+	
+	
+			ALU_if.ready[fu_id] <= 1'b1;
+		end
+		
+		
+	endtask
+	
+	
+	task automatic run_alus_parallel();
+		fork
+		  for (int i = 0; i < `NUM_OF_ALUS; i++) begin
+			automatic int id = i; // needed to isolate loop variable
+			fork
+				simulate_single_alu(id);
+			join_none
+		  end
+		join
+	  endtask
+
 	initial begin
 		clk = 1'b0; // Ensure clk is explicitly 0 at time 0
 	end
@@ -136,34 +188,53 @@ module INTEGRATION_TB #(
 	initial
 		begin
 			reset = 1'b1;
-			#20 reset = 1'b0;
-			#400 reset = 1'b1;
+			#35 reset = 1'b0;
+			#1000 reset = 1'b1;
 		end
 	
 
 	
 	initial 
 		begin
+			
+			int i;
+			
+			ALU_if.ready =  {`NUM_OF_ALUS{1'b1}};
+			MEM_if.ready =  {`NUM_OF_MEM{1'b1}};
+			
+			
 			is_branch_op_TEST			= 1'b0		;
 			is_branch_taken_TEST		= 1'b0		;
 			commit_valid_TEST 			= 1'b0		;
 			commit_with_write_TEST		= 1'b0		;
 			commited_wr_register_TEST	= 0			;
-			#101
-			commit_valid_TEST 			= 1'b1		;
-			commit_with_write_TEST		= 1'b1		;
-			commited_wr_register_TEST	= 5			;
-			#40
-			commit_valid_TEST 			= 1'b1		;
-			commit_with_write_TEST		= 1'b1		;
-			commited_wr_register_TEST	= 6			;
-			#40
-			is_branch_op_TEST			= 1'b1		;
-			is_branch_taken_TEST		= 1'b1		;
-			#40
-			is_branch_op_TEST			= 1'b1		;
-			is_branch_taken_TEST		= 1'b0		;
-	
+		
+			
+			
+			
+			run_alus_parallel();
+			 
+			
+		
+			//#101
+			//commit_valid_TEST 			= 1'b1		;
+			//commit_with_write_TEST		= 1'b1		;
+			//commited_wr_register_TEST	= 5			;
+			//#40
+			//commit_valid_TEST 			= 1'b1		;
+			//commit_with_write_TEST		= 1'b1		;
+			//commited_wr_register_TEST	= 6			;
+			//#40
+			//is_branch_op_TEST			= 1'b1		;
+			//is_branch_taken_TEST		= 1'b1		;
+			//#40
+			//is_branch_op_TEST			= 1'b1		;
+			//is_branch_taken_TEST		= 1'b0		;
+		
+			
+			
+			wait fork;
+
 		end
 	
 	
@@ -176,6 +247,6 @@ module INTEGRATION_TB #(
 	
 	//end test after 500ns
 	initial 
-		#500 $finish;
+		#1500 $finish;
 
 endmodule

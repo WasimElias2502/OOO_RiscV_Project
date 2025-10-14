@@ -18,6 +18,7 @@ module ARCH_REG_FILE #(
 	input [ARCH_REG_NUM_WIDTH-1:0] 				arch_read_reg_num2,			// ******************** W/R *****************//
 	input [ARCH_REG_NUM_WIDTH-1:0] 				arch_write_reg_num,			// **************** registers****************//
 	input 										regwrite,
+	input										new_valid_inst_in,
 	//inputs to free physical registers
 	input 										commit_valid,
 	input 										commit_with_write,
@@ -26,7 +27,8 @@ module ARCH_REG_FILE #(
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1, 			// ***************** physical ***************//
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2,			// ******************** W/R *****************//
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num,			// **************** registers****************//
-	output logic 						      	valid
+	output logic 						      	can_rename,
+	output logic								new_valid_inst_out
 );
 
 	//local params in use
@@ -70,7 +72,10 @@ module ARCH_REG_FILE #(
 			.empty   	(free_phy_registers_is_empty),
 			.next_empty	(next_free_phy_registers_is_empty)
 		);
-
+	
+	
+	
+	assign new_valid_inst_out = new_valid_inst_in		;
 	
 	// ************************************ Always Comb Logic **************************************************//
 	
@@ -84,7 +89,7 @@ module ARCH_REG_FILE #(
 		phy_register_old_next = phy_register_old ;
 	
 		//allocate new register for WR
-		if(regwrite && !free_phy_registers_is_empty && !reset) begin
+		if(new_valid_inst_in && regwrite && !free_phy_registers_is_empty && !reset) begin
 			pop_free_phy_register = 1'b1; 
 			arch_phy_mapping_next[arch_write_reg_num]	    = pop_free_phy_register_id;
 			phy_register_old_next[pop_free_phy_register_id] = arch_phy_mapping[arch_write_reg_num]; // update old used register
@@ -98,7 +103,7 @@ module ARCH_REG_FILE #(
 		end
 		
 		//not valid - cannot rename
-		valid =  ~next_free_phy_registers_is_empty;
+		can_rename =  ~next_free_phy_registers_is_empty;
 		
 		//read register instruction
 		phy_read_reg_num1 = arch_phy_mapping[arch_read_reg_num1];
@@ -127,8 +132,8 @@ module ARCH_REG_FILE #(
 		end
 		
 		else begin
-			phy_register_old <= phy_register_old_next;
-			arch_phy_mapping <= arch_phy_mapping_next;
+			phy_register_old   <= phy_register_old_next	;
+			arch_phy_mapping   <= arch_phy_mapping_next	;
 		end
 		
 	end	

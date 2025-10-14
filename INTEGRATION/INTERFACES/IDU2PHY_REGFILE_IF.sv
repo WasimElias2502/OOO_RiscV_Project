@@ -9,6 +9,7 @@ interface IDU2PHY_REGFILE_IF;
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2;			
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num;			
 	logic [`GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate ;
+	logic 									valid_inst;
 
 endinterface
 

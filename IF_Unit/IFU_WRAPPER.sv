@@ -21,7 +21,8 @@ module IFU_WRAPPER #(
 	//outputs
 	output [31:0] 				 Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
-	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out
+	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out,
+	output						 new_valid_inst
 );
 
 
@@ -30,6 +31,7 @@ module IFU_WRAPPER #(
 	logic [31:0] 				Instruction_Code_d[FETCH_WIDTH-1:0];
 	logic [INST_ADDR_WIDTH-1:0] pc_out_d;
 	logic [INST_ADDR_WIDTH-1:0] pc_plus_4_out_d;
+	logic 						new_valid_inst_d;
 
 
 //************************ IFU Instantiation **************************//
@@ -46,7 +48,8 @@ module IFU_WRAPPER #(
 		//outputs
 		.Instruction_Code		(Instruction_Code_d),
 		.pc_out					(pc_out_d),
-		.pc_plus_4_out			(pc_plus_4_out_d)
+		.pc_plus_4_out			(pc_plus_4_out_d),
+		.new_valid_inst			(new_valid_inst_d)
 	);
 	
 //************************ Flip Flop Output **************************//
@@ -63,8 +66,9 @@ module IFU_WRAPPER #(
 	  end
 	endgenerate
 	
-	DFF #(INST_ADDR_WIDTH) 	pc_ff 		(.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_out_d) , .out(pc_out));
-	DFF #(INST_ADDR_WIDTH) 	pc_plus4_ff (.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_plus_4_out_d) , .out(pc_plus_4_out));
+	DFF #(INST_ADDR_WIDTH) 	pc_ff 			(.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_out_d) , .out(pc_out));
+	DFF #(INST_ADDR_WIDTH) 	pc_plus4_ff 	(.clk(clk) , .rst(reset) , .enable(~stall) , .in(pc_plus_4_out_d) , .out(pc_plus_4_out));
+	DFF #(1)			 	valid_inst_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(new_valid_inst_d) , .out(new_valid_inst));
 	
 
 

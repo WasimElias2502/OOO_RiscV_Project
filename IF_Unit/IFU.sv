@@ -22,13 +22,14 @@ module IFU #(
 	//outputs
 	output [31:0] Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
-	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out
+	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out,
+	output						 new_valid_inst
 );
 
 	
 	reg [INST_ADDR_WIDTH-1 : 0] PC = {INST_ADDR_WIDTH{1'b0}};
 	logic [31:0] Instruction_Code_from_mem [FETCH_WIDTH-1:0];
-	
+	logic stop_fetch;
 	
 	//FLUSH if next pc sel is not pc+4
 	genvar i;
@@ -44,6 +45,21 @@ module IFU #(
 	assign pc_out = PC;	
 	assign pc_plus_4_out = PC+4;
 	
+	
+	//assign valid for new instruction (the IF is not in stall mode)
+	assign new_valid_inst = ~stall & ~stop_fetch;
+	
+	
+	//Logic to detect End of code in the memory TODO: change to something synthesizable
+	always_comb begin
+		stop_fetch = 0;
+		for (int i = 0; i < FETCH_WIDTH; i++) begin
+			if (Instruction_Code_from_mem[i] === 32'bx)
+				stop_fetch = 1;
+		end
+	end
+	
+	
 	always @(posedge clk , posedge reset)
 		begin
 			if(reset) begin
@@ -51,7 +67,7 @@ module IFU #(
 			end
 			//selector for PC - branches or PC+4
 			else begin
-				if(!stall) begin
+				if(!stall && !stop_fetch) begin
 					case(next_pc_sel)
 						sb		 	: PC <= SB_Type_addr;
 						uj		 	: PC <= UJ_Type_addr;

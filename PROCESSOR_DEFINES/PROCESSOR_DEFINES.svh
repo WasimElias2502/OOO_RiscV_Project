@@ -45,7 +45,7 @@
 	`define NOP_CONTROL '{alu_src:src_reg2, alu_op:add_op, is_branch_op:0, memory_op:no_mem_op, reg_wb:0}
 
 	//************************ Functional Unit Defines **************************//
-	`define NUM_OF_ALUS					4
+	`define NUM_OF_ALUS					2
 	`define NUM_OF_MEM					1
 	`define NUM_OF_FU					(`NUM_OF_ALUS+`NUM_OF_MEM)
 `endif

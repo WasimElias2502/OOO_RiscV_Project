@@ -27,6 +27,7 @@ module IDU_WRAPPER #(
 	input 										commit_with_write,
 	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register,
 	input 										flush,
+	input										new_valid_in,
 	
 	//control unit output
 	output control_t						  	control,
@@ -42,7 +43,8 @@ module IDU_WRAPPER #(
 	output logic 						      	can_rename,
 	
 	//imm output
-	output [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate
+	output [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate,
+	output										new_valid_inst_out
 	
 
 );
@@ -54,7 +56,8 @@ module IDU_WRAPPER #(
 	//arch ref file output
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_read_reg_num1_d; 			
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_read_reg_num2_d;			
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_write_reg_num_d;			
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			phy_write_reg_num_d;
+	logic										new_valid_inst_out_d;
 	
 	//imm output
 	logic [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate_d;
@@ -130,19 +133,21 @@ module IDU_WRAPPER #(
 		//inputs
 		.clk(clk),
 		.reset(reset),
-		.arch_read_reg_num1(arch_read_reg_num1),
-		.arch_read_reg_num2(arch_read_reg_num2),
-		.arch_write_reg_num(arch_write_reg_num),
-		.regwrite(dst_reg_active),
-		.commit_valid(commit_valid),
-		.commit_with_write(commit_with_write),
+		.arch_read_reg_num1	(arch_read_reg_num1),
+		.arch_read_reg_num2	(arch_read_reg_num2),
+		.arch_write_reg_num	(arch_write_reg_num),
+		.regwrite			(dst_reg_active),
+		.commit_valid		(commit_valid),
+		.commit_with_write	(commit_with_write),
 		.commited_wr_register(commited_wr_register),
+		.new_valid_inst_in	(new_valid_in),
 		
 		//outputs
-		.phy_read_reg_num1(phy_read_reg_num1_d),
-		.phy_read_reg_num2(phy_read_reg_num2_d),
-		.phy_write_reg_num(phy_write_reg_num_d),
-		.valid(can_rename)
+		.phy_read_reg_num1	(phy_read_reg_num1_d),
+		.phy_read_reg_num2	(phy_read_reg_num2_d),
+		.phy_write_reg_num	(phy_write_reg_num_d),
+		.can_rename			(can_rename),
+		.new_valid_inst_out (new_valid_inst_out_d)
 	);
 	
 	
@@ -151,6 +156,8 @@ module IDU_WRAPPER #(
 	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) , .out(phy_write_reg_num));
 	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 , .out(can_rename_to_ctrl_unit));
 	
+	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1) , .in(new_valid_inst_out_d) , .out(new_valid_inst_out));
+
 	
 	
 //**************************** Immediate Generator Instantiation ******************************//

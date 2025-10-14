@@ -18,9 +18,10 @@ module IFU_TB #() ();
 	reg [31:0] Instruction_Code [`FETCH_WIDTH-1:0];
 	reg [`INST_ADDR_WIDTH-1:0] pc , pc_plus_4;
 	reg stall;
+	reg new_valid_inst;
 	
 	//DUT
-	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , stall ,Instruction_Code , pc , pc_plus_4 );
+	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , stall ,Instruction_Code , pc , pc_plus_4 ,new_valid_inst);
 	
 	
 	//Setting Up waveform

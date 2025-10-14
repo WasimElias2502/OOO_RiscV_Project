@@ -25,6 +25,7 @@ module PHY_REGFILE_WRAPPER #(
 	input 	[`INST_ADDR_WIDTH-1:0] 				pc_in					, 
 	input 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_in	,
 	input										flush					,
+	input										valid_inst_in			,
 	
 	//output
 	output 	[`REG_VAL_WIDTH-1:0]				src_val1				,
@@ -34,9 +35,11 @@ module PHY_REGFILE_WRAPPER #(
 	output 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	dst_phy_reg_out 		,
 	output 	control_t						  	control_out				,
 	output 	[`INST_ADDR_WIDTH-1:0] 				pc_out					,
-	output	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_out
+	output	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_out ,
+	output										valid_inst_out				
 
 );
+
 
 
 //******************************************** PHY REGFILE outputs -> FF ********************************************
@@ -71,7 +74,7 @@ module PHY_REGFILE_WRAPPER #(
 
 //************************************************* Flip Flop Section ***********************************************
 
-	
+	DFF #(1) 							new_valid_inst_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(valid_inst_in) , .out(valid_inst_out));
 	DFF #(`REG_VAL_WIDTH) 				src_val1_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(src_val1_d) , .out(src_val1));
 	DFF #(`REG_VAL_WIDTH) 				src_val2_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(src_val2_d) , .out(src_val2));
 	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg1_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(src_phy_reg1_in) , .out(src_phy_reg1_out));

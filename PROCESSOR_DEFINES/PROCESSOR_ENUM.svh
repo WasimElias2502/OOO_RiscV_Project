@@ -53,8 +53,7 @@
 	typedef struct packed {
 
 		bit [`REG_VAL_WIDTH-1:0] 			src_reg1_val  ;
-		bit [`REG_VAL_WIDTH-1:0] 			src_reg2_val  ;
-		bit [`REG_VAL_WIDTH-1:0]			dst_reg_val   ;		 
+		bit [`REG_VAL_WIDTH-1:0] 			src_reg2_val  ;	 
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg1_addr ;
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg2_addr ;
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	dest_reg_addr ;

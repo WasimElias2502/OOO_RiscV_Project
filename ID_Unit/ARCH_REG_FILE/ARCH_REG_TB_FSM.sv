@@ -14,19 +14,21 @@ module ARCH_REG_TB_FSM #(
 	// DUT inputs
 	logic clk;
 	logic reset;
-	logic [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num1;
-	logic [ARCH_REG_NUM_WIDTH-1:0] arch_read_reg_num2;
-	logic [ARCH_REG_NUM_WIDTH-1:0] arch_write_reg_num;
-	logic regwrite;
-	logic commit_valid;
-	logic commit_with_write;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] commited_wr_register;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num1;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num2;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_write_reg_num;
+	logic 								regwrite;
+	logic 								commit_valid;
+	logic 								commit_with_write;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	commited_wr_register;
+	logic								new_valid_inst_in;
 	
 	// DUT outputs
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num1;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_read_reg_num2;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] phy_write_reg_num;
-	logic 							   valid;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num;
+	logic 							   	can_rename;
+	logic							   	new_valid_inst_out;
 	
 	// Instantiate DUT
 	ARCH_REG_FILE #(
@@ -38,6 +40,7 @@ module ARCH_REG_TB_FSM #(
 		.arch_read_reg_num1(arch_read_reg_num1),
 		.arch_read_reg_num2(arch_read_reg_num2),
 		.arch_write_reg_num(arch_write_reg_num),
+		.new_valid_inst_in (new_valid_inst_in),
 		.regwrite(regwrite),
 		.commit_valid(commit_valid),
 		.commit_with_write(commit_with_write),
@@ -45,7 +48,8 @@ module ARCH_REG_TB_FSM #(
 		.phy_read_reg_num1(phy_read_reg_num1),
 		.phy_read_reg_num2(phy_read_reg_num2),
 		.phy_write_reg_num(phy_write_reg_num),
-		.valid(valid)
+		.can_rename(can_rename),
+		.new_valid_inst_out(new_valid_inst_out)
 	);
 	
 	// Clock generation: 40ns period (25 MHz)
@@ -92,6 +96,7 @@ module ARCH_REG_TB_FSM #(
 			case (state)
 				IDLE: begin
 					// Idle state: do nothing
+					new_valid_inst_in	 <= 0;
 					arch_read_reg_num1   <= 0;
 					arch_read_reg_num2   <= 0;
 					arch_write_reg_num   <= 0;
@@ -102,6 +107,7 @@ module ARCH_REG_TB_FSM #(
 				end
 	
 				STEP1: begin
+					new_valid_inst_in	 <= 1;
 					arch_read_reg_num1   <= 1;
 					arch_read_reg_num2   <= 2;
 					arch_write_reg_num   <= 3;
