@@ -23,11 +23,12 @@ module IDU_WRAPPER #(
 	input [INST_ADDR_WIDTH-1:0] 				pc_in,
 	input [INST_ADDR_WIDTH-1:0] 				pc_plus_4_in,
 	//inputs to free physical registers
-	input 										commit_valid,
-	input 										commit_with_write,
-	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register,
+	input [`MAX_NUM_OF_COMMITS-1:0]				commit_valid,
+	input [`MAX_NUM_OF_COMMITS-1:0]				commit_with_write,
+	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register [`MAX_NUM_OF_COMMITS-1:0],
 	input 										flush,
 	input										new_valid_in,
+	input										stall,
 	
 	//control unit output
 	output control_t						  	control,
@@ -72,18 +73,51 @@ module IDU_WRAPPER #(
 	logic [INST_ADDR_WIDTH-1:0] 				pc_out_d;
 	func3_t										func3;
 	func7_t										func7;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_read_reg_num1;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_read_reg_num2;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			arch_write_reg_num;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 				arch_read_reg_num1;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 				arch_read_reg_num2;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 				arch_write_reg_num;
 
 
+
+//******************************** Instruction Stall ***************************************//
+
+	logic 										stalled_valid;
+	logic [31:0] 				 				stalled_Instruction_Code [FETCH_WIDTH-1:0];
+	logic [INST_ADDR_WIDTH-1:0] 				stalled_pc_in;
+	
+	always_ff @(posedge clk or posedge reset) begin
+		if (reset) begin
+			stalled_valid       			<= 1'b0;
+			for(int i=0 ; i<FETCH_WIDTH ; i++) begin
+				stalled_Instruction_Code[i] <= '0;
+			end
+		end else begin
+			
+			if (new_valid_in && stall) begin
+				stalled_valid       		<= 1'b1;
+				stalled_Instruction_Code 	<= Instruction_Code; // save instruction
+			end
+			
+			else if (stalled_valid && ~stall) begin
+				stalled_valid <= 1'b0; // release the stall
+			end
+		end
+	end
+	
+	
+	//Mux to choose between stalled instruction and new instruction
+	logic [31:0] 				 						Chosen_Instruction_Code [FETCH_WIDTH-1:0];
+	
+	assign Chosen_Instruction_Code = (stalled_valid) ? stalled_Instruction_Code : Instruction_Code;
+	
+	
 
 
 //****************************** Control Unit Instantiation ********************************//
 
-	assign opcode 	= (can_rename_to_ctrl_unit && ~flush) ? opcode_t'(Instruction_Code[0][`OPCODE_WIDTH-1:0]) : NOP;
-	assign func3   	= Instruction_Code[0][14:12];
-	assign func7	= Instruction_Code[0][31:25];
+	assign opcode 	= (can_rename_to_ctrl_unit && ~flush) ? opcode_t'(Chosen_Instruction_Code[0][`OPCODE_WIDTH-1:0]) : NOP;
+	assign func3   	= Chosen_Instruction_Code[0][14:12];
+	assign func7	= Chosen_Instruction_Code[0][31:25];
 
 	CONTROL_UNIT control_unit (
 		
@@ -116,7 +150,7 @@ module IDU_WRAPPER #(
 	
 //********************************** Program Counter ****************************************//
 
-	assign pc_out_d = pc_in ;
+	assign pc_out_d = (stalled_valid) ? stalled_pc_in : pc_in ;
 	
 	DFF #(INST_ADDR_WIDTH) 	pc_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(pc_out_d) , .out(pc_out));
 
@@ -124,9 +158,12 @@ module IDU_WRAPPER #(
 //**************************** Arch Reg File Instantiation **********************************//
 
 	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type || opcode == NOP);
-	assign arch_read_reg_num1 = Instruction_Code[0][19:15];
-	assign arch_read_reg_num2 = Instruction_Code[0][24:20];
-	assign arch_write_reg_num = Instruction_Code[0][11:7];
+	assign arch_read_reg_num1 = Chosen_Instruction_Code[0][19:15];
+	assign arch_read_reg_num2 = Chosen_Instruction_Code[0][24:20];
+	assign arch_write_reg_num = Chosen_Instruction_Code[0][11:7];
+	
+	logic  issue_allowed;
+	assign issue_allowed = (stalled_valid | new_valid_in) & ~stall;
 
 	ARCH_REG_FILE arch_reg_file (
 		
@@ -140,7 +177,7 @@ module IDU_WRAPPER #(
 		.commit_valid		(commit_valid),
 		.commit_with_write	(commit_with_write),
 		.commited_wr_register(commited_wr_register),
-		.new_valid_inst_in	(new_valid_in),
+		.new_valid_inst_in	(issue_allowed),
 		
 		//outputs
 		.phy_read_reg_num1	(phy_read_reg_num1_d),
@@ -151,12 +188,11 @@ module IDU_WRAPPER #(
 	);
 	
 	
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num1_d) , .out(phy_read_reg_num1));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num2_d) , .out(phy_read_reg_num2));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) , .out(phy_write_reg_num));
-	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 , .out(can_rename_to_ctrl_unit));
-	
-	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1) , .in(new_valid_inst_out_d) , .out(new_valid_inst_out));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num1_d) 			, .out(phy_read_reg_num1));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num2_d) 			, .out(phy_read_reg_num2));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) 			, .out(phy_write_reg_num));
+	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 			, .out(can_rename_to_ctrl_unit));
+	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1) , .in(new_valid_inst_out_d & ~flush) 	, .out(new_valid_inst_out));
 
 	
 	
@@ -165,7 +201,7 @@ module IDU_WRAPPER #(
 	IMM_GENERATOR imm_generator (
 		
 		//inputs
-		.Instruction_code(Instruction_Code[0]),
+		.Instruction_code(Chosen_Instruction_Code[0]),
 		
 		//outputs
 		.generated_immediate (generated_immediate_d)
