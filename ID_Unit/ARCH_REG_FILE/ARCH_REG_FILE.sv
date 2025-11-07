@@ -20,9 +20,9 @@ module ARCH_REG_FILE #(
 	input 										regwrite,
 	input										new_valid_inst_in,
 	//inputs to free physical registers
-	input 										commit_valid,
-	input 										commit_with_write,
-	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register,
+	input [`MAX_NUM_OF_COMMITS-1:0]					commit_valid,
+	input [`MAX_NUM_OF_COMMITS-1:0]					commit_with_write,
+	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register [`MAX_NUM_OF_COMMITS-1:0],
 	
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1, 			// ***************** physical ***************//
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2,			// ******************** W/R *****************//
@@ -41,8 +41,8 @@ module ARCH_REG_FILE #(
 	logic										next_free_phy_registers_is_empty;
 	logic 										pop_free_phy_register ;
 	logic [PHYSICAL_REG_NUM_WIDTH-1:0]  		pop_free_phy_register_id ;
-	logic 										push_free_phy_register ;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			push_free_phy_register_id ;
+	logic [`MAX_NUM_OF_COMMITS-1:0]					push_free_phy_register ;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 			push_free_phy_register_id [`MAX_NUM_OF_COMMITS-1:0];
 	
 
 	//mapping of the arch-phy registers
@@ -60,7 +60,9 @@ module ARCH_REG_FILE #(
 		.ADDR_WIDTH (PHYSICAL_REG_NUM_WIDTH),
 		.RESET_INITIAL_PUSH_EN(1),
 		.RESET_INITIAL_PUSH_START(IN_USE),
-		.RESET_INITIAL_PUSH_COUNT(NOT_IN_USE)
+		.RESET_INITIAL_PUSH_COUNT(NOT_IN_USE),
+		.MAX_NUM_OF_WRITES_WIDTH(`MAX_NUM_OF_COMMITS_WIDTH)
+		
 		) free_phy_registers(
 			.clk		(clk),
 			.reset		(reset),
@@ -83,10 +85,13 @@ module ARCH_REG_FILE #(
 		
 		//Default values
 		pop_free_phy_register = 1'b0;
-		push_free_phy_register_id = 0 ;
 		push_free_phy_register = 1'b0 ;
 		arch_phy_mapping_next = arch_phy_mapping ;
 		phy_register_old_next = phy_register_old ;
+		
+		for(int i=0 ; i<`MAX_NUM_OF_COMMITS ; i++) begin
+			push_free_phy_register_id[i] = 1'b0;
+		end
 	
 		//allocate new register for WR
 		if(new_valid_inst_in && regwrite && !free_phy_registers_is_empty && !reset) begin
@@ -96,10 +101,12 @@ module ARCH_REG_FILE #(
 		end
 		
 		//got commited WR instruction
-		if(commit_valid && commit_with_write && phy_register_old[commited_wr_register]!= `NO_OLD_PRF && !reset ) begin
-			push_free_phy_register    = 1'b1;
-			push_free_phy_register_id = phy_register_old[commited_wr_register];
-			phy_register_old_next[commited_wr_register] = `NO_OLD_PRF;	
+		for(int i=0 ; i<`MAX_NUM_OF_COMMITS ; i++) begin
+			if(commit_valid[i]  && commit_with_write[i]  && phy_register_old[commited_wr_register[i]]!= `NO_OLD_PRF && !reset ) begin
+				push_free_phy_register[i]    = 1'b1;
+				push_free_phy_register_id[i] = phy_register_old[commited_wr_register[i]];
+				phy_register_old_next[commited_wr_register[i]] = `NO_OLD_PRF;	
+			end
 		end
 		
 		//not valid - cannot rename

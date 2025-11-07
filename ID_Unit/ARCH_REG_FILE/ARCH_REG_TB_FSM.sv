@@ -14,21 +14,21 @@ module ARCH_REG_TB_FSM #(
 	// DUT inputs
 	logic clk;
 	logic reset;
-	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num1;
-	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num2;
-	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_write_reg_num;
-	logic 								regwrite;
-	logic 								commit_valid;
-	logic 								commit_with_write;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	commited_wr_register;
-	logic								new_valid_inst_in;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num1								;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_read_reg_num2								;
+	logic [ARCH_REG_NUM_WIDTH-1:0] 		arch_write_reg_num								;
+	logic 								regwrite										;
+	logic [`MAX_NUM_OF_COMMITS-1:0]		commit_valid									;
+	logic [`MAX_NUM_OF_COMMITS-1:0]		commit_with_write								;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	commited_wr_register [`MAX_NUM_OF_COMMITS-1:0]	;
+	logic								new_valid_inst_in								;
 	
 	// DUT outputs
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2;
-	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num;
-	logic 							   	can_rename;
-	logic							   	new_valid_inst_out;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1								;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2								;
+	logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num								;
+	logic 							   	can_rename										;
+	logic							   	new_valid_inst_out								;
 	
 	// Instantiate DUT
 	ARCH_REG_FILE #(
@@ -64,7 +64,7 @@ module ARCH_REG_TB_FSM #(
 	end
 	
 	// Test sequence controller
-	typedef enum logic [3:0] {
+	typedef enum logic [4:0] {
 		IDLE,
 		STEP1,
 		STEP2,
@@ -73,6 +73,8 @@ module ARCH_REG_TB_FSM #(
 		STEP5,
 		STEP6,
 		STEP7,
+		STEP8,
+		STEP9,
 		DONE
 	} test_state_t;
 	
@@ -90,77 +92,96 @@ module ARCH_REG_TB_FSM #(
 			regwrite             <= 1'b0;
 			commit_valid         <= 1'b0;
 			commit_with_write    <= 1'b0;
-			commited_wr_register <= '0;
+			commited_wr_register[0] <= '0;
 		end else begin
 			state <= next_state;
 			case (state)
 				IDLE: begin
 					// Idle state: do nothing
-					new_valid_inst_in	 <= 0;
-					arch_read_reg_num1   <= 0;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 0;
-					regwrite             <= 0;
-					commit_valid         <= 0;
-					commit_with_write    <= 0;
-					commited_wr_register <= 0;
+					new_valid_inst_in	 	<= 0;
+					arch_read_reg_num1   	<= 0;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 0;
+					regwrite             	<= 0;
+					commit_valid         	<= 0;
+					commit_with_write    	<= 0;
+					commited_wr_register[0] <= 0;
 				end
 	
 				STEP1: begin
-					new_valid_inst_in	 <= 1;
-					arch_read_reg_num1   <= 1;
-					arch_read_reg_num2   <= 2;
-					arch_write_reg_num   <= 3;
-					regwrite             <= 1;
+					new_valid_inst_in	 	<= 1;
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 2;
+					arch_write_reg_num   	<= 3;
+					regwrite             	<= 1;
 				end
 	
 				STEP2: begin
-					arch_read_reg_num1   <= 1;
-					arch_read_reg_num2   <= 3;
-					arch_write_reg_num   <= 1;
-					regwrite             <= 1;
+					arch_read_reg_num1 	  	<= 1;
+					arch_read_reg_num2   	<= 3;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
 				end
 	
 				STEP3: begin
-					arch_read_reg_num1   <= 2;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 2;
-					regwrite             <= 1;
+					arch_read_reg_num1   	<= 2;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 2;
+					regwrite             	<= 1;
 				end
 	
 				STEP4: begin
-					arch_read_reg_num1   <= 2;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 2;
-					regwrite             <= 1;
+					arch_read_reg_num1   	<= 2;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 2;
+					regwrite             	<= 1;
 				end
 				
 				STEP5: begin
-					arch_read_reg_num1   <= 1;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 1;
-					regwrite             <= 1;
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
 				end
 				
 				STEP6: begin
-					arch_read_reg_num1   <= 1;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 1;
-					regwrite             <= 1;
-					//commit command 3
-					commit_valid         <= 1'b1;
-					commit_with_write    <= 1'b1;
-					commited_wr_register <= 6;
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
+					//commit command 1+2+3
+					commit_valid[0]         <= 1'b1;
+					commit_with_write[0]    <= 1'b1;
+					commited_wr_register[0] <= 4;
+					
+					commit_valid[1]         <= 1'b1;
+					commit_with_write[1]    <= 1'b1;
+					commited_wr_register[1] <= 5;
+					
+					commit_valid[2]         <= 1'b1;
+					commit_with_write[2]    <= 1'b1;
+					commited_wr_register[2] <= 6;
 				end
 				
 				STEP7: begin
-					arch_read_reg_num1   <= 1;
-					arch_read_reg_num2   <= 0;
-					arch_write_reg_num   <= 1;
-					regwrite             <= 1;
-					commit_valid         <= 1'b0;
-					commit_with_write    <= 1'b0;
-					commited_wr_register <= 0;
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
+					commit_valid         	<= 0;
+					commit_with_write    	<= 0;
+				end
+				STEP8: begin
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
+				end
+				STEP9: begin
+					arch_read_reg_num1   	<= 1;
+					arch_read_reg_num2   	<= 0;
+					arch_write_reg_num   	<= 1;
+					regwrite             	<= 1;
 				end
 				
 
@@ -184,7 +205,9 @@ module ARCH_REG_TB_FSM #(
 			STEP4:  next_state = STEP5;
 			STEP5:  next_state = STEP6;
 			STEP6:  next_state = STEP7;
-			STEP7:  next_state = DONE;
+			STEP7:  next_state = STEP8;
+			STEP8:  next_state = STEP9;
+			STEP9:  next_state = DONE;
 			DONE:   next_state = DONE;
 			default: next_state = IDLE;
 		endcase
@@ -197,8 +220,9 @@ module ARCH_REG_TB_FSM #(
 	
 	// Dump waveform
 	initial begin
-		$dumpfile("ARCH_REG_TB_FSM.vcd");
-		$dumpvars(0, ARCH_REG_TB_FSM);
+		
+		$fsdbDumpfile("ARCH_REG_TB_FSM_output_wave.vcd");
+		$fsdbDumpvars(0,ARCH_REG_TB_FSM);
 	end
 
 
