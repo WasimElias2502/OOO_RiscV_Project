@@ -12,6 +12,7 @@ interface FU_IF #(
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0]	dst_reg_addr [NUM_OF_FU-1:0]	;
 	control_t 							control		 [NUM_OF_FU-1:0]	;
 	logic [`REG_VAL_WIDTH-1:0]			immediate	 [NUM_OF_FU-1:0]	;
+	logic [`INST_ADDR_WIDTH-1:0]		pc			 [NUM_OF_FU-1:0]	;
 	
 	
 	modport FU(
@@ -21,7 +22,8 @@ interface FU_IF #(
 		input  src2_reg_val,
 		input  dst_reg_addr,
 		input  control,
-		input  immediate
+		input  immediate,
+		input	pc
 
 	);
 	
@@ -32,7 +34,8 @@ interface FU_IF #(
 		output  src2_reg_val,
 		output  dst_reg_addr,
 		output  control,
-		output  immediate
+		output  immediate,
+		output	pc
 	);
 
 endinterface

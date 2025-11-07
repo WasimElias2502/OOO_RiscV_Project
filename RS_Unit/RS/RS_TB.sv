@@ -41,8 +41,11 @@ module RS_TB #(
 	RS_UNIT_REG_STATUS#() register_status_table(
 		.reset						(reset)									,
 		.clk						(clk)									,
+		.new_valid_inst				(new_valid_inst)						,
+		.dst_reg_addr				(dst_reg_addr)							,	
 		.reg_status_2_alu_rs_if		(alu_rs2reg_status_table_if.REG_STATUS)	,
-		.reg_status_2_mem_rs_if		(mem_rs2reg_status_table_if.REG_STATUS)
+		.reg_status_2_mem_rs_if		(mem_rs2reg_status_table_if.REG_STATUS) ,
+		.cdb_if						(cdb_if.slave)
 	);
 	
 	
@@ -140,9 +143,19 @@ module RS_TB #(
 			@(posedge clk);
 			@(posedge clk);
 			@(posedge clk);
-	
-	
-			fu_alu_if.ready[fu_id] <= 1'b1;
+			
+			//Added to check functionality with CDB chose reandom reg 3 TODO: remove
+			cdb_if.valid[fu_id]		   <= 1'b1	;
+			cdb_if.register_addr[fu_id]   <= 3		;
+			cdb_if.register_val[fu_id]	   <= 50	;
+			
+  			fu_alu_if.ready[fu_id] <= 1'b1	;
+			
+			//De assert valid in cdb
+			
+			@(posedge clk);
+			cdb_if.valid[fu_id]		   <= 1'b0	;
+			
 		end
 		
 		

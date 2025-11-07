@@ -24,6 +24,7 @@ module RS #(
 	input [`PHYSICAL_REG_NUM_WIDTH-1:0] src_reg2_addr					,
 	input [`REG_VAL_WIDTH-1:0]			immediate						,
 	input								new_valid_inst					,
+	input [`INST_ADDR_WIDTH-1:0]		pc_in							,
 	
 	output								cdb_ready						,
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
@@ -123,6 +124,9 @@ module RS #(
 			for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 				RS_entries[i].valid_entry <= 1'b0;
 			end
+
+			
+			
 		end
 		else begin
 			
@@ -130,7 +134,8 @@ module RS #(
 			// =============================== Dispatch instruction from RS ==========================================
 			for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 				if(rs_dispatch_en[i]) begin
-					RS_entries[i].valid_entry				<= 1'b0;
+					RS_entries[i].valid_entry					<= 1'b0					;
+
 				end
 			end
 			
@@ -139,6 +144,8 @@ module RS #(
 			found_empty_RS_entry = 0;
 			
 			for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
+				
+				//TODO: add ready signal when all RS are busy the ready = 0
 				if (!RS_entries[i].valid_entry && !found_empty_RS_entry && new_valid_inst) begin
 					RS_entries[i].dest_reg_addr 							<= dst_reg_addr			;
 					RS_entries[i].control									<= control				;
@@ -148,8 +155,7 @@ module RS #(
 					RS_entries[i].src_reg2_val								<= src_reg2_val			;
 					RS_entries[i].valid_entry								<= 1'b1					;
 					RS_entries[i].immediate									<= immediate			;
-					reg_status_table_if.update_reg_status[dst_reg_addr] 	<= not_valid			;
-					reg_status_table_if.valid[dst_reg_addr]					<= 1'b1					;
+					RS_entries[i].pc										<= pc_in				;
 					
 					found_empty_RS_entry 				= 1'b1;
 				end //if (!RS_busy[i] && !found_empty_RS_entry) 
@@ -157,23 +163,22 @@ module RS #(
 			
 			
 			//  ======================= Got new executed command -- update register ====================================
-			if(cdb_if.valid && cdb_ready) begin
+			for(int cdb_idx=0 ; cdb_idx<`NUM_OF_FU ; cdb_idx++) begin
 				
-				//update CDB written register to be valid
-				reg_status_table_if.update_reg_status[cdb_if.register_addr] <= valid 	 ;
-				reg_status_table_if.valid[cdb_if.register_addr]				<= 1'b1		 ;
-				
-				// update RS
-				for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
-					if(cdb_if.register_addr == RS_entries[i].src_reg1_addr) begin
-						RS_entries[i].src_reg1_val <= cdb_if.register_val;
-					end
-					if(cdb_if.register_addr == RS_entries[i].src_reg2_addr) begin
-						RS_entries[i].src_reg2_val <= cdb_if.register_val;
-					end
-				end //for
-			end// if(CDB_IF.valid && CDB_IF.ready)
 
+				if(cdb_if.valid[cdb_idx] && cdb_ready) begin
+					
+					// update RS
+					for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
+						if(cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg1_addr) begin
+							RS_entries[i].src_reg1_val <= cdb_if.register_val[cdb_idx];
+						end
+						if(cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg2_addr) begin
+							RS_entries[i].src_reg2_val <= cdb_if.register_val[cdb_idx];
+						end
+					end //for
+				end// if(CDB_IF.valid && CDB_IF.ready)
+			end
 		end //else
 	end// always_ff @(posedge clk or posedge reset) begin
 	
@@ -198,12 +203,13 @@ module RS #(
 			
 			for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 				if(rs_dispatch_en[i]) begin
-					fu_if.valid[rs_fu_assign[i]]			<= 1'b1;
-					fu_if.control[rs_fu_assign[i]]			<= RS_entries[i].control;
-					fu_if.src1_reg_val[rs_fu_assign[i]]		<= RS_entries[i].src_reg1_val;
-					fu_if.src2_reg_val[rs_fu_assign[i]]		<= RS_entries[i].src_reg2_val;
-					fu_if.dst_reg_addr[rs_fu_assign[i]]		<= RS_entries[i].dest_reg_addr;
-					fu_if.immediate[rs_fu_assign[i]]		<= RS_entries[i].immediate;	
+					fu_if.valid[rs_fu_assign[i]]			<= 1'b1							;
+					fu_if.control[rs_fu_assign[i]]			<= RS_entries[i].control		;
+					fu_if.src1_reg_val[rs_fu_assign[i]]		<= RS_entries[i].src_reg1_val	;
+					fu_if.src2_reg_val[rs_fu_assign[i]]		<= RS_entries[i].src_reg2_val	;
+					fu_if.dst_reg_addr[rs_fu_assign[i]]		<= RS_entries[i].dest_reg_addr	;
+					fu_if.immediate[rs_fu_assign[i]]		<= RS_entries[i].immediate		;	
+					fu_if.pc[rs_fu_assign[i]]				<= RS_entries[i].pc				;
 				end
 			end // for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 		end //else begin
