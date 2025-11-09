@@ -11,7 +11,6 @@ interface PHY_REGFILE2RS_IF;
 	control_t							control		  					;
 	logic [`REG_VAL_WIDTH-1:0] 			src_reg1_val					;
 	logic [`REG_VAL_WIDTH-1:0] 			src_reg2_val					;
-	logic [`REG_VAL_WIDTH-1:0] 			dst_reg_val						;
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0]	dst_reg_addr					;
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0] src_reg1_addr					;
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0] src_reg2_addr					;
@@ -24,7 +23,6 @@ interface PHY_REGFILE2RS_IF;
 		output 		control,
 		output 		src_reg1_val,
 		output		src_reg2_val,
-		output 		dst_reg_val,
 		output		dst_reg_addr,
 		output		src_reg1_addr,
 		output		src_reg2_addr,
@@ -38,7 +36,6 @@ interface PHY_REGFILE2RS_IF;
 		input 		control,
 		input 		src_reg1_val,
 		input		src_reg2_val,
-		input 		dst_reg_val,
 		input		dst_reg_addr,
 		input		src_reg1_addr,
 		input		src_reg2_addr,

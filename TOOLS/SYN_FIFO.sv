@@ -75,16 +75,19 @@ module SYN_FIFO #(
 	// Calculate next fill count
 	always_comb begin
 		fill_count_next = fill_count_reg;
-		if ((fill_count_reg < FIFO_DEPTH) && (!rd_en || (fill_count_reg == 0))) begin
+		if (((fill_count_reg + num_of_writes < FIFO_DEPTH+1) && wr_en) && (!rd_en || (fill_count_reg == 0))) begin
 			// Only writing OR writing to an empty FIFO while also reading
 			fill_count_next = fill_count_reg + num_of_writes;
 		end else if (rd_en && (fill_count_reg > 0) && (wr_en == 0 || (fill_count_reg == FIFO_DEPTH))) begin
 			// Only reading OR reading from a full FIFO while also writing
 			fill_count_next = fill_count_reg  - 1;
 		end
-		else begin
+		else if(wr_en != 0 && rd_en && (fill_count_reg + num_of_writes < FIFO_DEPTH)) begin
 		// If both read and write happen simultaneously and FIFO is not full/empty, count remains same
 			fill_count_next = fill_count_reg + num_of_writes - 1;
+		end
+		else begin
+			fill_count_next = fill_count_reg;
 		end
 	end
 

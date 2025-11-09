@@ -90,12 +90,14 @@ module IDU_WRAPPER #(
 			stalled_valid       			<= 1'b0;
 			for(int i=0 ; i<FETCH_WIDTH ; i++) begin
 				stalled_Instruction_Code[i] <= '0;
+				stalled_pc_in				<= '0;			
 			end
 		end else begin
 			
 			if (new_valid_in && stall) begin
 				stalled_valid       		<= 1'b1;
 				stalled_Instruction_Code 	<= Instruction_Code; // save instruction
+				stalled_pc_in				<= pc_in;
 			end
 			
 			else if (stalled_valid && ~stall) begin
