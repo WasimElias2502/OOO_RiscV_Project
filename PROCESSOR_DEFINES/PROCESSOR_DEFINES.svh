@@ -36,7 +36,6 @@
 	`define CTRL_WIDTH					$bits(control_t)
 	
 	//******************** Reservation Station Defines **************************//
-	//`define RS_TAG_WIDTH				`PHYSICAL_REG_NUM_WIDTH
 	`define	RS_ALU_ENTRIES_NUM			8
 	`define	RS_MEM_ENTRIES_NUM			2
 	
@@ -45,9 +44,20 @@
 	`define NOP_CONTROL '{alu_src:src_reg2, alu_op:add_op, is_branch_op:0, memory_op:no_mem_op, reg_wb:0}
 
 	//************************ Functional Unit Defines **************************//
-	`define NUM_OF_ALUS					2
+	`define NUM_OF_ALUS					3
 	`define NUM_OF_MEM					1
 	`define NUM_OF_FU					(`NUM_OF_ALUS+`NUM_OF_MEM)
+	`define	LOW_LATENCY_CYCLES			3
+	`define HIGH_LATENCY_CYCLES			5
+	
+	//************************ ReOrder Buffer Defines ****************************//
+	`define ROB_SIZE_WIDTH				3
+	`define ROB_SIZE					(1<<`ROB_SIZE_WIDTH)
+	`define MAX_NUM_OF_COMMITS_WIDTH	2
+	`define MAX_NUM_OF_COMMITS			(1<<`MAX_NUM_OF_COMMITS_WIDTH)
+	
+	
+	
 `endif
 
 

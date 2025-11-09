@@ -57,7 +57,9 @@
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg1_addr ;
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	src_reg2_addr ;
 		bit [`PHYSICAL_REG_NUM_WIDTH-1:0]	dest_reg_addr ;
-		bit [`REG_VAL_WIDTH-1:0]			immediate	  ;	
+		bit [`REG_VAL_WIDTH-1:0]			immediate	  ;
+		bit [`INST_ADDR_WIDTH-1:0]			pc			  ;
+		bit [`ROB_SIZE_WIDTH-1:0]			new_inst_tag  ;	
 		control_t 							control		  ;
 		bit									valid_entry	  ;	
 		
