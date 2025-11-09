@@ -13,9 +13,10 @@ module RS #(
 	parameter int FU_IDX_WIDTH = (FU_NUM <= 1) ? 1 : $clog2(FU_NUM)
 	
 ) (
+	
+	//inputs
 	input								clk								,
 	input								reset							,
-	//inputs
 	input control_t						control		  					,
 	input [`REG_VAL_WIDTH-1:0] 			src_reg1_val					,
 	input [`REG_VAL_WIDTH-1:0] 			src_reg2_val					,
@@ -25,6 +26,7 @@ module RS #(
 	input [`REG_VAL_WIDTH-1:0]			immediate						,
 	input								new_valid_inst					,
 	input [`INST_ADDR_WIDTH-1:0]		pc_in							,
+	input [`ROB_SIZE_WIDTH-1:0]			new_inst_tag					,
 	
 	output								cdb_ready						,
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
@@ -38,7 +40,6 @@ module RS #(
 	bit[RS_ENTRIES_NUM-1:0]						RS_busy						;
 	
 	//Instantiate Physical Register Status Table
-	
 	bit 										found_empty_RS_entry;
 	
 	// *************************************** Assignments *****************************************************//
@@ -156,6 +157,8 @@ module RS #(
 					RS_entries[i].valid_entry								<= 1'b1					;
 					RS_entries[i].immediate									<= immediate			;
 					RS_entries[i].pc										<= pc_in				;
+					RS_entries[i].new_inst_tag								<= new_inst_tag			;
+				
 					
 					found_empty_RS_entry 				= 1'b1;
 				end //if (!RS_busy[i] && !found_empty_RS_entry) 
@@ -210,6 +213,7 @@ module RS #(
 					fu_if.dst_reg_addr[rs_fu_assign[i]]		<= RS_entries[i].dest_reg_addr	;
 					fu_if.immediate[rs_fu_assign[i]]		<= RS_entries[i].immediate		;	
 					fu_if.pc[rs_fu_assign[i]]				<= RS_entries[i].pc				;
+					fu_if.new_inst_tag[rs_fu_assign[i]]		<= RS_entries[i].new_inst_tag	;
 				end
 			end // for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 		end //else begin

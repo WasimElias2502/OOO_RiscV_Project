@@ -18,13 +18,41 @@ module RS_UNIT_WRAPPER #() (
 	input [`PHYSICAL_REG_NUM_WIDTH-1:0] src_reg2_addr					,
 	input [`REG_VAL_WIDTH-1:0]			immediate						,
 	input								new_valid_inst					,
+	input [`INST_ADDR_WIDTH-1:0]		pc_in							,
+		
+	output								rob_full						,
 	
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
 	FU_IF.RS							alu_if 	 						,
-	FU_IF.RS							mem_if 	 						
+	FU_IF.RS							mem_if 	 						,
+	COMMIT_IF.slave						commit_if						
 
 );
-
+	//TODO: add if RS are full then stall the pipe
+	
+	
+	//====================================== Reservation Station TAG generator ============================ //
+	
+	logic [`ROB_SIZE_WIDTH-1:0]			new_inst_tag		;
+	logic								new_inst_tag_valid	;
+	
+	assign commit_if.new_inst_tag		= new_inst_tag		;
+	assign commit_if.new_inst_tag_valid = new_inst_tag_valid;
+	
+	RS_TAG_GENERATOR instruction_tag_allocator(
+		
+		.clk					(clk),
+		.reset					(reset),
+		.new_valid_inst			(new_valid_inst),
+		
+		.commited_tags_valid	(commit_if.commited_tags_valid),
+		.commited_tags			(commit_if.commited_tags),
+		.new_inst_tag			(new_inst_tag),
+		.new_inst_tag_valid		(new_inst_tag_valid),
+		.rob_full				(rob_full)
+		);
+	
+	
 
 	//========================================= Register Status Instatiation ============================== //
 	
@@ -35,8 +63,11 @@ module RS_UNIT_WRAPPER #() (
 	RS_UNIT_REG_STATUS#() register_status_table(
 		.reset						(reset)									,
 		.clk						(clk)									,
+		.new_valid_inst				(new_valid_inst)						,
+		.dst_reg_addr				(dst_reg_addr)							,
 		.reg_status_2_alu_rs_if		(alu_rs2reg_status_table_if.REG_STATUS)	,
-		.reg_status_2_mem_rs_if		(mem_rs2reg_status_table_if.REG_STATUS)
+		.reg_status_2_mem_rs_if		(mem_rs2reg_status_table_if.REG_STATUS)	,
+		.cdb_if						(cdb_if)
 	);
 	
 	
@@ -79,6 +110,8 @@ module RS_UNIT_WRAPPER #() (
 		.src_reg2_addr  		(src_reg2_addr) ,
 		.immediate				(immediate)		,
 		.new_valid_inst			(alu_inst_valid),
+		.pc_in					(pc_in)			,
+		.new_inst_tag			(new_inst_tag)	,
 		
 		.cdb_ready				(alu_cdb_ready)	,
 		.cdb_if					(cdb_if)		,
@@ -103,6 +136,8 @@ module RS_UNIT_WRAPPER #() (
 		.src_reg2_addr  		(src_reg2_addr) ,
 		.immediate				(immediate)		,
 		.new_valid_inst			(mem_inst_valid),
+		.pc_in					(pc_in)			,
+		.new_inst_tag			(new_inst_tag)	,
 		
 		.cdb_ready				(mem_cdb_ready)	,
 		.cdb_if					(cdb_if)		,
