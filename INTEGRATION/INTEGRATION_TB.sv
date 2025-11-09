@@ -8,9 +8,7 @@
 
 `timescale 1ns/1ns
 
-module INTEGRATION_TB #(
-	GENERATED_IMMEDIATE_WIDTH = `REG_VAL_WIDTH
-) ();
+module INTEGRATION_TB #() ();
 
 
 	//reset & clk
@@ -22,11 +20,12 @@ module INTEGRATION_TB #(
 	
 	//**************************************** Testing Signals **********************************************//
 	
-	logic 										commit_valid_TEST					;
-	logic 										commit_with_write_TEST				;
-	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		commited_wr_register_TEST			;
-	logic										is_branch_op_TEST					;
-	logic										is_branch_taken_TEST				;
+	logic 	[`MAX_NUM_OF_COMMITS-1:0]			commit_valid_TEST										;
+	logic 	[`MAX_NUM_OF_COMMITS-1:0]			commit_with_write_TEST									;
+	logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0] 		commited_wr_register_TEST [`MAX_NUM_OF_COMMITS-1:0]		;
+	logic										is_branch_op_TEST										;
+	logic										is_branch_taken_TEST									;
+	logic										stall_TEST												; //TODO: rs_full or branch or rob full
 	
 			
 
@@ -38,7 +37,8 @@ module INTEGRATION_TB #(
 	FU_IF# ( .NUM_OF_FU(`NUM_OF_ALUS))			ALU_if();
 	FU_IF# ( .NUM_OF_FU(`NUM_OF_MEM))			MEM_if();
 	CDB_IF										CDB_if();
-	
+	COMMIT_IF 									COMMIT_if();
+	logic										rob_full; 	
 	
 	
 	//*********************************** IFU Wrapper Instantiation *****************************************//
@@ -50,7 +50,7 @@ module INTEGRATION_TB #(
 		.SB_Type_addr				(0),
 		.UJ_Type_addr				(0),
 		.JALR_Type_addr				(0),
-		.stall						(~IF2IDU_if.can_rename),
+		.stall						(~IF2IDU_if.can_rename | rob_full),
 		.Instruction_Code			(IF2IDU_if.Instruction_Code),
 		.pc_out						(IF2IDU_if.pc),
 		.pc_plus_4_out				(IF2IDU_if.pc_plus_4),
@@ -71,6 +71,7 @@ module INTEGRATION_TB #(
 		.commited_wr_register		(commited_wr_register_TEST),
 		.flush						(flush),
 		.new_valid_in				(IF2IDU_if.valid_inst),
+		.stall						(rob_full),
 		
 		.control					(IDU2PHY_REGFILE_if.control),
 		.pc_out						(IDU2PHY_REGFILE_if.pc),
@@ -99,6 +100,8 @@ module INTEGRATION_TB #(
 		.generated_immediate_in		(IDU2PHY_REGFILE_if.generated_immediate),
 		.flush						(flush),
 		.valid_inst_in				(IDU2PHY_REGFILE_if.valid_inst),
+		.stall						(rob_full),
+		
 		
 		.src_val1					(PHY_REGFILE2RS_if.src_reg1_val),
 		.src_val2					(PHY_REGFILE2RS_if.src_reg2_val),
@@ -106,7 +109,7 @@ module INTEGRATION_TB #(
 		.src_phy_reg2_out			(PHY_REGFILE2RS_if.src_reg2_addr),
 		.dst_phy_reg_out			(PHY_REGFILE2RS_if.dst_reg_addr),
 		.control_out				(PHY_REGFILE2RS_if.control),
-		.pc_out						(pc_phyRegfile_rs),
+		.pc_out						(PHY_REGFILE2RS_if.pc),
 		.generated_immediate_out	(PHY_REGFILE2RS_if.immediate),
 		.valid_inst_out				(PHY_REGFILE2RS_if.new_valid_inst)
 
@@ -125,11 +128,23 @@ module INTEGRATION_TB #(
 		.src_reg2_addr				(PHY_REGFILE2RS_if.src_reg2_addr),
 		.immediate					(PHY_REGFILE2RS_if.immediate),
 		.new_valid_inst				(PHY_REGFILE2RS_if.new_valid_inst),
+		.pc_in						(PHY_REGFILE2RS_if.pc),
 		.cdb_if						(CDB_if.slave),
 		.alu_if						(ALU_if.RS),
-		.mem_if						(MEM_if.RS)
+		.mem_if						(MEM_if.RS),
+		.rob_full					(rob_full),
+		.commit_if                  (COMMIT_if.slave)
+		
 	);
 	
+	//***************************************** Functional Units *************************************************//
+	
+	FU_UNIT_WRAPPER functional_units(
+		.clk						(clk),
+		.reset						(reset),
+		.alu_if						(ALU_if.FU),
+		.cdb_if						(CDB_if.master)
+	);
 	
 	//***************************** Branch Misprediction Unit Instantiation***************************************//
 
@@ -142,7 +157,7 @@ module INTEGRATION_TB #(
 	);
 
 	//****************************************** Stimulus********************************************************//
-	
+	/*
 	task automatic simulate_single_alu(input int fu_id);
 		
 		
@@ -163,20 +178,38 @@ module INTEGRATION_TB #(
 			ALU_if.ready[fu_id] <= 1'b1;
 		end
 		
-		
+	 	
 	endtask
 	
-	
+	*/
 	task automatic run_alus_parallel();
 		fork
 		  for (int i = 0; i < `NUM_OF_ALUS; i++) begin
 			automatic int id = i; // needed to isolate loop variable
 			fork
-				simulate_single_alu(id);
+				//simulate_single_alu(id);
 			join_none
 		  end
 		join
-	  endtask
+	endtask
+	
+	
+	task automatic commit_registers();
+		#600ns
+		@(posedge clk);
+		commit_valid_TEST 				<= 4'b011;
+		commit_with_write_TEST			<= 4'b011;
+		commited_wr_register_TEST[0] 	<= 4;
+		commited_wr_register_TEST[1] 	<= 5;	
+		commited_wr_register_TEST[2] 	<= 6;
+		commited_wr_register_TEST[3] 	<= 7;	
+		
+		@(posedge clk);
+		commit_valid_TEST 				<= 0;
+		commit_with_write_TEST			<= 0;
+
+		
+	endtask
 
 	initial begin
 		clk = 1'b0; // Ensure clk is explicitly 0 at time 0
@@ -189,7 +222,7 @@ module INTEGRATION_TB #(
 		begin
 			reset = 1'b1;
 			#35 reset = 1'b0;
-			#1000 reset = 1'b1;
+			#1400 reset = 1'b1;
 		end
 	
 
@@ -199,37 +232,31 @@ module INTEGRATION_TB #(
 			
 			int i;
 			
-			ALU_if.ready =  {`NUM_OF_ALUS{1'b1}};
-			MEM_if.ready =  {`NUM_OF_MEM{1'b1}};
+			//ALU_if.ready =  {`NUM_OF_ALUS{1'b1}};
+			//MEM_if.ready =  {`NUM_OF_MEM{1'b1}};
 			
 			
 			is_branch_op_TEST			= 1'b0		;
 			is_branch_taken_TEST		= 1'b0		;
-			commit_valid_TEST 			= 1'b0		;
-			commit_with_write_TEST		= 1'b0		;
-			commited_wr_register_TEST	= 0			;
-		
 			
+			COMMIT_if.commited_tags_valid = '0		;
+			for (int i=0 ; i< `MAX_NUM_OF_COMMITS ; i++) begin
+				COMMIT_if.commited_tags[i] = '0;
+			end
 			
+			//run_alus_parallel();
 			
-			run_alus_parallel();
+			stall_TEST = 1'b0;
+			#90
+			@(posedge clk);
+			stall_TEST <= 1'b1;
+			#200
+			@(posedge clk);
+			stall_TEST <= 1'b0;
 			 
 			
+			commit_registers();
 		
-			//#101
-			//commit_valid_TEST 			= 1'b1		;
-			//commit_with_write_TEST		= 1'b1		;
-			//commited_wr_register_TEST	= 5			;
-			//#40
-			//commit_valid_TEST 			= 1'b1		;
-			//commit_with_write_TEST		= 1'b1		;
-			//commited_wr_register_TEST	= 6			;
-			//#40
-			//is_branch_op_TEST			= 1'b1		;
-			//is_branch_taken_TEST		= 1'b1		;
-			//#40
-			//is_branch_op_TEST			= 1'b1		;
-			//is_branch_taken_TEST		= 1'b0		;
 		
 			
 			
