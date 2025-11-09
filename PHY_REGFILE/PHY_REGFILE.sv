@@ -20,7 +20,7 @@ module PHY_REGFILE #(
 	
 	input 										dst_wr_en	,
 	input 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	dst_phy_reg ,
-	input 	[`REG_VAL_WIDTH-1:0]    	dst_val 	,
+	input 	[`REG_VAL_WIDTH-1:0]    			dst_val 	,
 	
 	//output
 	output 	[`REG_VAL_WIDTH-1:0]				src_val1	,

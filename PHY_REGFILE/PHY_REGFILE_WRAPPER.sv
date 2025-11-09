@@ -138,7 +138,8 @@ module PHY_REGFILE_WRAPPER #(
 
 //************************************************* Flip Flop Section ***********************************************
 	
-	logic issue_allowed = (valid_inst_in | stalled_valid ) & ~stall;
+	logic 	issue_allowed;
+	assign	issue_allowed = (valid_inst_in | stalled_valid ) & ~stall;
 	
 	DFF #(1) 							new_valid_inst_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(issue_allowed) , .out(valid_inst_out));
 	DFF #(`REG_VAL_WIDTH) 				src_val1_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(src_val1_d) , .out(src_val1));
