@@ -13,6 +13,7 @@ interface FU_IF #(
 	control_t 							control		 [NUM_OF_FU-1:0]	;
 	logic [`REG_VAL_WIDTH-1:0]			immediate	 [NUM_OF_FU-1:0]	;
 	logic [`INST_ADDR_WIDTH-1:0]		pc			 [NUM_OF_FU-1:0]	;
+	logic [`ROB_SIZE_WIDTH-1:0]			new_inst_tag [NUM_OF_FU-1:0]	;
 	
 	
 	modport FU(
@@ -23,7 +24,8 @@ interface FU_IF #(
 		input  dst_reg_addr,
 		input  control,
 		input  immediate,
-		input	pc
+		input  pc,
+		input  new_inst_tag
 
 	);
 	
@@ -35,7 +37,8 @@ interface FU_IF #(
 		output  dst_reg_addr,
 		output  control,
 		output  immediate,
-		output	pc
+		output	pc,
+		output  new_inst_tag
 	);
 
 endinterface
