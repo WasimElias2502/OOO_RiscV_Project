@@ -158,6 +158,18 @@ module RS #(
 					RS_entries[i].immediate									<= immediate			;
 					RS_entries[i].pc										<= pc_in				;
 					RS_entries[i].new_inst_tag								<= new_inst_tag			;
+					
+					//if CDB give new values
+					for(int cdb_idx=0 ; cdb_idx<`NUM_OF_FU ; cdb_idx++) begin
+						//REG1
+						if((src_reg1_addr == cdb_if.register_addr[cdb_idx]) && cdb_if.valid[cdb_idx]) begin
+							RS_entries[i].src_reg1_val <= cdb_if.register_val[cdb_idx];
+						end	
+						//REG2
+						if((src_reg2_addr == cdb_if.register_addr[cdb_idx]) && cdb_if.valid[cdb_idx]) begin
+							RS_entries[i].src_reg2_val <= cdb_if.register_val[cdb_idx];
+						end	
+					end
 				
 					
 					found_empty_RS_entry 				= 1'b1;
@@ -173,10 +185,10 @@ module RS #(
 					
 					// update RS
 					for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
-						if(cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg1_addr) begin
+						if((cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg1_addr ) && RS_entries[i].valid_entry) begin
 							RS_entries[i].src_reg1_val <= cdb_if.register_val[cdb_idx];
 						end
-						if(cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg2_addr) begin
+						if((cdb_if.register_addr[cdb_idx] == RS_entries[i].src_reg2_addr)  && RS_entries[i].valid_entry) begin
 							RS_entries[i].src_reg2_val <= cdb_if.register_val[cdb_idx];
 						end
 					end //for
