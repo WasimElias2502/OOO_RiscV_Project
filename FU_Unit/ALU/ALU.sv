@@ -111,10 +111,13 @@ module ALU #(
 			pc_out_valid 			= 1'b0						;
 		end
 		else begin
+			alu_valid		 		= 1'b0						;
+			pc_out_valid 			= 1'b0						;
+			
 			if(counter == 0 && curr_inst_valid) begin
 				if(curr_inst_is_branch) begin
-					pc_out_valid 	= is_curr_branch_taken	;
-					alu_valid		= 1'b0				  	;
+					pc_out_valid 	= is_curr_branch_taken		;
+					alu_valid		= 1'b0				  		;
 
 				end
 				else begin

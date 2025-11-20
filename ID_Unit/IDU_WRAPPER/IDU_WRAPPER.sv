@@ -24,7 +24,7 @@ module IDU_WRAPPER #(
 	input [INST_ADDR_WIDTH-1:0] 				pc_plus_4_in,
 	//inputs to free physical registers
 	input [`MAX_NUM_OF_COMMITS-1:0]				commit_valid,
-	input [`MAX_NUM_OF_COMMITS-1:0]				commit_with_write,
+	commit_type_t								commit_type	[`MAX_NUM_OF_COMMITS-1:0],
 	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register [`MAX_NUM_OF_COMMITS-1:0],
 	input [`ROB_SIZE_WIDTH-1:0]					commit_tag	[`MAX_NUM_OF_COMMITS-1:0],
 	input 										flush,
@@ -43,12 +43,16 @@ module IDU_WRAPPER #(
 	//arch ref file output
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num1, 			// ***************** physical ***************//
 	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_read_reg_num2,			// ******************** W/R *****************//
-	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num,			// **************** registers****************//
+	output logic [PHYSICAL_REG_NUM_WIDTH-1:0] 	phy_write_reg_num,			// **************** registers ***************//
 	output logic 						      	can_rename,
 	
 	//imm output
 	output [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate,
-	output										new_valid_inst_out
+	output										new_valid_inst_out,
+	
+	//to ROB
+	output logic [ARCH_REG_NUM_WIDTH-1:0] 		dest_arch_register
+
 	
 
 );
@@ -184,6 +188,14 @@ module IDU_WRAPPER #(
 	
 	logic  issue_allowed;
 	assign issue_allowed = (stalled_valid | new_valid_in) & ~stall;
+	
+	logic [`MAX_NUM_OF_COMMITS-1:0]				commit_with_write;
+	
+	always_comb begin
+		for(int i=0 ; i<`MAX_NUM_OF_COMMITS ; i++ ) begin
+			commit_with_write[i] = (commit_type[i] == reg_commit);
+		end
+	end
 
 	RAT rat (
 		
@@ -213,7 +225,7 @@ module IDU_WRAPPER #(
 	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) 			, .out(phy_write_reg_num));
 	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 			, .out(can_rename_to_ctrl_unit));
 	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1) , .in(new_valid_inst_out_d & ~flush) 	, .out(new_valid_inst_out));
-
+	DFF #(ARCH_REG_NUM_WIDTH)		dest_arch_register_ff		(.clk(clk) , .rst(reset) , .enable(1) , .in(arch_write_reg_num) 			, .out(dest_arch_register));
 	
 	
 //**************************** Immediate Generator Instantiation ******************************//
