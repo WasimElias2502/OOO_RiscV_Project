@@ -16,7 +16,8 @@ module TAG_GENERATOR #() (
 	
 	output [`ROB_SIZE_WIDTH-1:0]			new_inst_tag									,
 	output 									new_inst_tag_valid								,
-	output									rob_full										
+	output									rob_full										,
+	output									rob_empty
 );
 	logic tag_fifo_empty;
 
@@ -35,7 +36,7 @@ module TAG_GENERATOR #() (
 			.reset			(reset),
 			.wr_en 			(commited_tags_valid),
 			.wr_data 		(commited_tags),
-			.full			(),
+			.full			(rob_empty),
 			.rd_en 			(new_valid_inst),
 			.rd_data		(new_inst_tag),
 			.empty			(tag_fifo_empty),

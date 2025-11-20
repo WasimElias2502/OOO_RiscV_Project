@@ -19,6 +19,7 @@ module IFU_WRAPPER #(
 	input [INST_ADDR_WIDTH-1:0] JALR_Type_addr,
 	input 						stall,				
 	//outputs
+	output						 seen_last_inst,
 	output [31:0] 				 Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
 	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out,
@@ -49,7 +50,8 @@ module IFU_WRAPPER #(
 		.Instruction_Code		(Instruction_Code_d),
 		.pc_out					(pc_out_d),
 		.pc_plus_4_out			(pc_plus_4_out_d),
-		.new_valid_inst			(new_valid_inst_d)
+		.new_valid_inst			(new_valid_inst_d),
+		.seen_last_inst			(seen_last_inst)
 	);
 	
 //************************ Flip Flop Output **************************//

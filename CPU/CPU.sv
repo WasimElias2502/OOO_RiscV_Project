@@ -8,9 +8,12 @@
 
 module CPU #() (
 	//reset & clk
-	input 										clk ,
-	input 										reset,
-	ARCH_REG_READ_IF.slave						ARCH_REG_READ_if
+	input logic									clk 					,
+	input logic									reset					,
+	
+	
+	ARCH_REG_READ_IF.slave						ARCH_REG_READ_if		,
+	output logic								finish
 
 );
 
@@ -37,7 +40,21 @@ module CPU #() (
 	FU_IF# ( .NUM_OF_FU(`NUM_OF_MEM))			MEM_if();
 	CDB_IF										CDB_if();
 	COMMIT_IF 									COMMIT_if();
-	logic										rob_full; 	
+	logic										rob_full; 
+	logic										rob_empty;
+	logic										seen_last_inst;
+	
+	
+	//*************************************** Finish code Logic *********************************************//
+	
+	always_ff @(posedge clk or posedge reset) begin
+		if (reset) begin
+			finish <= 1'b0;
+		end else if (seen_last_inst && rob_empty) begin
+			finish <= 1'b1;
+		end
+	end
+
 	
 	
 	//*********************************** IFU Wrapper Instantiation *****************************************//
@@ -53,7 +70,8 @@ module CPU #() (
 		.Instruction_Code			(IF2IDU_if.Instruction_Code),
 		.pc_out						(IF2IDU_if.pc),
 		.pc_plus_4_out				(IF2IDU_if.pc_plus_4),
-		.new_valid_inst				(IF2IDU_if.valid_inst)
+		.new_valid_inst				(IF2IDU_if.valid_inst),
+		.seen_last_inst				(seen_last_inst)
 	);
 	
 	
@@ -74,6 +92,7 @@ module CPU #() (
 		.stall						(0),
 		
 		.rob_full					(rob_full),
+		.rob_empty					(rob_empty),
 		.inst_tag					(IDU2PHY_REGFILE_if.inst_tag),
 		.control					(IDU2PHY_REGFILE_if.control),
 		.pc_out						(IDU2PHY_REGFILE_if.pc),
@@ -159,7 +178,7 @@ module CPU #() (
 	
 	//************************************* Re Order Buffer Unit *************************************************//
 	
-	ROB rob (
+	ROB_WRAPPER rob (
 		.clk						(clk),
 		.reset						(reset),
 		.cdb_if						(CDB_if.slave),

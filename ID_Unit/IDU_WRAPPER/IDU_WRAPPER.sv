@@ -38,6 +38,7 @@ module IDU_WRAPPER #(
 	output [INST_ADDR_WIDTH-1:0] 				pc_out,
 	output [`ROB_SIZE_WIDTH-1:0]				inst_tag,
 	output										rob_full,
+	output										rob_empty,
 	
 	
 	//arch ref file output
@@ -133,7 +134,8 @@ module IDU_WRAPPER #(
 		.commited_tags_valid	(commit_valid),
 		.commited_tags			(commit_tag),
 		.new_inst_tag			(new_inst_tag),
-		.rob_full				(rob_full)
+		.rob_full				(rob_full),
+		.rob_empty				(rob_empty)
 		);
 	DFF#(`ROB_SIZE_WIDTH) tag_ff	(.clk(clk) , .rst(reset) , .enable(1) , .in(new_inst_tag) , .out(inst_tag));
 

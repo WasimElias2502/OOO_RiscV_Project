@@ -22,7 +22,8 @@ module IFU #(
 	output [31:0] Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
 	output [INST_ADDR_WIDTH-1:0] pc_plus_4_out,
-	output						 new_valid_inst
+	output						 new_valid_inst,
+	output						 seen_last_inst
 );
 
 	
@@ -57,6 +58,8 @@ module IFU #(
 				stop_fetch = 1;
 		end
 	end
+	
+	assign seen_last_inst = stop_fetch;
 	
 	
 	always @(posedge clk , posedge reset)
