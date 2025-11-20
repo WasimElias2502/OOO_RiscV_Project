@@ -1,18 +1,19 @@
 /*------------------------------------------------------------------------------
- * File          : INTEGRATION_TB.sv
+ * File          : CPU.sv
  * Project       : RTL
  * Author        : epwebq
- * Creation date : Jun 23, 2025
+ * Creation date : Nov 15, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
 
-
-module INTEGRATION_TB #() ();
-
-
+module CPU #() (
 	//reset & clk
-	logic 										clk , reset							;
-	
+	input 										clk ,
+	input 										reset,
+	ARCH_REG_READ_IF.slave						ARCH_REG_READ_if
+
+);
+
 	//Branch Misprediction Unit wires
 	next_pc_t 									next_pc_sel							;
 	logic										flush								;
@@ -22,8 +23,11 @@ module INTEGRATION_TB #() ();
 	logic										is_branch_taken_TEST									;
 	logic										stall_TEST												; //TODO: rs_full or branch or rob full
 	
+	assign is_branch_op_TEST = 1'b0;
+	assign is_branch_taken_TEST = 1'b0;
+	
 			
-
+	
 	//******************************************* Interfaces ************************************************// 
 	
 	IF2IDU_IF									IF2IDU_if();
@@ -52,7 +56,7 @@ module INTEGRATION_TB #() ();
 		.new_valid_inst				(IF2IDU_if.valid_inst)
 	);
 	
-
+	
 	//*********************************** IDU Wrapper Instantiation *****************************************//
 	
 	IDU_WRAPPER decode_unit (
@@ -88,7 +92,7 @@ module INTEGRATION_TB #() ();
 		.clk						(clk),
 		.reset						(reset),
 		.commit_if					(COMMIT_if.slave),
-		.read_regs_if				()// TODO: connect
+		.read_regs_if				(ARCH_REG_READ_if)
 	);
 	
 	
@@ -120,7 +124,7 @@ module INTEGRATION_TB #() ();
 		.generated_immediate_out	(PHY_REGFILE2RS_if.immediate),
 		.valid_inst_out				(PHY_REGFILE2RS_if.new_valid_inst),
 		.inst_tag_out				(PHY_REGFILE2RS_if.inst_tag)
-
+	
 	);
 	
 	//************************************ Reservation Station Unit **********************************************//
@@ -153,7 +157,7 @@ module INTEGRATION_TB #() ();
 	);
 	
 	//***************************** Branch Misprediction Unit Instantiation***************************************//
-
+	
 	BRANCH_MISPRED_UNIT branch_mispred_unit(
 		.is_branch_op				(is_branch_op_TEST),
 		.branch_taken				(is_branch_taken_TEST),
@@ -162,84 +166,5 @@ module INTEGRATION_TB #() ();
 		.next_pc_sel				(next_pc_sel)
 	);
 
-	//****************************************** Stimulus********************************************************//
-		
-	task automatic commit_registers();
-		#600ns
-		@(posedge clk);
-		commit_valid_TEST 				<= 4'b011;
-		commit_with_write_TEST			<= 4'b011;
-		commited_wr_register_TEST[0] 	<= 4;
-		commited_wr_register_TEST[1] 	<= 5;	
-		commited_wr_register_TEST[2] 	<= 6;
-		commited_wr_register_TEST[3] 	<= 7;	
-		
-		@(posedge clk);
-		commit_valid_TEST 				<= 0;
-		commit_with_write_TEST			<= 0;
-
-		
-	endtask
-
-	initial begin
-		clk = 1'b0; // Ensure clk is explicitly 0 at time 0
-	end
-	always #20 clk = ~clk ;
-		
-	
-	//reset
-	initial
-		begin
-			reset = 1'b1;
-			#35 reset = 1'b0;
-			#1400 reset = 1'b1;
-		end
-	
-
-	
-	initial 
-		begin
-			
-			int i;
-			
-			
-			is_branch_op_TEST			= 1'b0		;
-			is_branch_taken_TEST		= 1'b0		;
-			
-			COMMIT_if.commited_tags_valid = '0		;
-			for (int i=0 ; i< `MAX_NUM_OF_COMMITS ; i++) begin
-				COMMIT_if.commited_tags[i] = '0;
-			end
-			
-			
-			stall_TEST = 1'b0;
-			#90
-			@(posedge clk);
-			stall_TEST <= 1'b1;
-			#200
-			@(posedge clk);
-			stall_TEST <= 1'b0;
-			 
-			
-			commit_registers();
-		
-		
-			
-			
-			wait fork;
-
-		end
-	
-	
-	//Setting Up waveform
-	initial
-		begin
-			$fsdbDumpfile("INTEGRATION_TB_output_wave.vcd");
-			$fsdbDumpvars(0,INTEGRATION_TB);
-		end
-	
-	//end test after 500ns
-	initial 
-		#1500 $finish;
 
 endmodule

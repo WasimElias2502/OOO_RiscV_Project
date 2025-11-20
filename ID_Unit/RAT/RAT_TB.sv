@@ -1,12 +1,12 @@
 /*------------------------------------------------------------------------------
- * File          : ARCH_REG_TB_FSM.sv
+ * File          : RAT_TB.sv
  * Project       : RTL
  * Author        : epwebq
  * Creation date : Jun 20, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
 
-module ARCH_REG_TB_FSM #(
+module RAT_TB #(
 	ARCH_REG_NUM_WIDTH    = `ARCH_REG_NUM_WIDTH,
 	PHYSICAL_REG_NUM_WIDTH= `PHYSICAL_REG_NUM_WIDTH
 ) ();
@@ -31,7 +31,7 @@ module ARCH_REG_TB_FSM #(
 	logic							   	new_valid_inst_out								;
 	
 	// Instantiate DUT
-	ARCH_REG_FILE #(
+	RAT #(
 		.ARCH_REG_NUM_WIDTH(ARCH_REG_NUM_WIDTH),
 		.PHYSICAL_REG_NUM_WIDTH(PHYSICAL_REG_NUM_WIDTH)
 	) dut (
@@ -221,8 +221,8 @@ module ARCH_REG_TB_FSM #(
 	// Dump waveform
 	initial begin
 		
-		$fsdbDumpfile("ARCH_REG_TB_FSM_output_wave.vcd");
-		$fsdbDumpvars(0,ARCH_REG_TB_FSM);
+		$fsdbDumpfile("RAT_TB_output_wave.vcd");
+		$fsdbDumpvars(0,RAT_TB);
 	end
 
 

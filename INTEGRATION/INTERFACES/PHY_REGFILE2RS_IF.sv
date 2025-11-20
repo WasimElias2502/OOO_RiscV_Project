@@ -17,6 +17,7 @@ interface PHY_REGFILE2RS_IF;
 	logic [`REG_VAL_WIDTH-1:0]			immediate						;
 	logic								new_valid_inst					;
 	logic [`INST_ADDR_WIDTH-1:0]		pc								;
+	logic [`ROB_SIZE_WIDTH-1:0]			inst_tag						;
 	
 	
 	modport PHY_REGFILE(
@@ -28,7 +29,8 @@ interface PHY_REGFILE2RS_IF;
 		output		src_reg2_addr,
 		output		immediate,
 		output		new_valid_inst,
-		output		pc		  
+		output		pc,
+		output 		inst_tag
 	);
 	
 	
@@ -41,7 +43,9 @@ interface PHY_REGFILE2RS_IF;
 		input		src_reg2_addr,
 		input		immediate,
 		input		new_valid_inst,
-		input		pc
+		input		pc,
+		input 		inst_tag
+
 	);
 	
 

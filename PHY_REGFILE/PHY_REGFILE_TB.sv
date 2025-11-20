@@ -5,7 +5,6 @@
  * Creation date : Jul 12, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
-`timescale 1ns/1ns
 
 module PHY_REGFILE_TB #() ();
 	
@@ -13,17 +12,17 @@ module PHY_REGFILE_TB #() ();
 	
 		//DUT inputs
 		
-		logic 										clk				;
-		logic 										reset			;
-		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg1	;
-		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg2	;
-		logic 										dst_wr_en		;
-		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	dst_phy_reg 	;
-		logic 	[`REG_VAL_WIDTH-1:0]    	dst_val 		;
+		logic 										clk								;
+		logic 										reset							;
+		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg1					;
+		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg2					;
+		logic 										dst_wr_en	 [`NUM_OF_FU-1:0]	;
+		logic 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	dst_phy_reg  [`NUM_OF_FU-1:0]	;
+		logic 	[`REG_VAL_WIDTH-1:0]    			dst_val 	 [`NUM_OF_FU-1:0]	;
 		
 		//DUT output
-		logic 	[`REG_VAL_WIDTH-1:0]				src_val1		;
-		logic 	[`REG_VAL_WIDTH-1:0]				src_val2		;	
+		logic 	[`REG_VAL_WIDTH-1:0]				src_val1						;
+		logic 	[`REG_VAL_WIDTH-1:0]				src_val2						;	
 	
 	
 	//*************************************************** DUT Instantiation **********************************************************//
@@ -76,36 +75,36 @@ module PHY_REGFILE_TB #() ();
 		//drive inputs for the DUT
 		initial
 			begin
-				src_phy_reg1 	= 0;
-				src_phy_reg2 	= 0;
-				dst_wr_en	 	= 0;
-				dst_phy_reg		= 0;
-				dst_val			= 0;
+				src_phy_reg1 		= 0;
+				src_phy_reg2 		= 0;
+				dst_wr_en[0]	 	= 0;
+				dst_phy_reg[0]		= 0;
+				dst_val[0]			= 0;
 	
 				#21
-				src_phy_reg1 	= 21;
-				src_phy_reg2 	= 23;
+				src_phy_reg1 		= 21;
+				src_phy_reg2 		= 23;
 				
 				#40
-				src_phy_reg1 	= 6;
-				src_phy_reg2 	= 5;
-				dst_wr_en	 	= 1;
-				dst_phy_reg		= 23;
-				dst_val			= 144;
+				src_phy_reg1 		= 6;
+				src_phy_reg2 		= 5;
+				dst_wr_en[0]	 	= 1;
+				dst_phy_reg[0]		= 23;
+				dst_val[0]			= 144;
 				
 				#40
-				src_phy_reg1 	= 23;
-				src_phy_reg2 	= 22;
-				dst_wr_en	 	= 1;
-				dst_phy_reg		= 22;
-				dst_val			= 109;
+				src_phy_reg1 		= 23;
+				src_phy_reg2 		= 22;
+				dst_wr_en[0]	 	= 1;
+				dst_phy_reg[0]		= 22;
+				dst_val[0]			= 109;
 				
 				#40
-				src_phy_reg1 	= 23;
-				src_phy_reg2 	= 22;
-				dst_wr_en	 	= 0;
-				dst_phy_reg		= 5;
-				dst_val			= 109;
+				src_phy_reg1 		= 23;
+				src_phy_reg2 		= 22;
+				dst_wr_en[0]	 	= 0;
+				dst_phy_reg[0]		= 5;
+				dst_val[0]			= 109;
 					
 			end
 		

@@ -26,6 +26,7 @@ module IDU_WRAPPER #(
 	input [`MAX_NUM_OF_COMMITS-1:0]				commit_valid,
 	input [`MAX_NUM_OF_COMMITS-1:0]				commit_with_write,
 	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register [`MAX_NUM_OF_COMMITS-1:0],
+	input [`ROB_SIZE_WIDTH-1:0]					commit_tag	[`MAX_NUM_OF_COMMITS-1:0],
 	input 										flush,
 	input										new_valid_in,
 	input										stall,
@@ -35,6 +36,8 @@ module IDU_WRAPPER #(
 	
 	//pc output
 	output [INST_ADDR_WIDTH-1:0] 				pc_out,
+	output [`ROB_SIZE_WIDTH-1:0]				inst_tag,
+	output										rob_full,
 	
 	
 	//arch ref file output
@@ -63,7 +66,7 @@ module IDU_WRAPPER #(
 	//imm output
 	logic [GENERATED_IMMEDIATE_WIDTH-1:0] 		generated_immediate_d;
 	
-	//cannot rename (arch regfile -> control unit)
+	//cannot rename (RAT -> control unit)
 	logic 										can_rename_to_ctrl_unit;
 	
 //****************************** Internal Control Signals  *********************************//
@@ -112,8 +115,23 @@ module IDU_WRAPPER #(
 	
 	assign Chosen_Instruction_Code = (stalled_valid) ? stalled_Instruction_Code : Instruction_Code;
 	
-	
 
+//====================================== Reservation Station TAG generator ============================ //
+	
+	logic [`ROB_SIZE_WIDTH-1:0]			new_inst_tag		;
+	
+	TAG_GENERATOR instruction_tag_allocator(
+		
+		.clk					(clk),
+		.reset					(reset),
+		.new_valid_inst			(new_valid_in),
+		
+		.commited_tags_valid	(commit_valid),
+		.commited_tags			(commit_tag),
+		.new_inst_tag			(new_inst_tag),
+		.rob_full				(rob_full)
+		);
+	DFF#(`ROB_SIZE_WIDTH) tag_ff	(.clk(clk) , .rst(reset) , .enable(1) , .in(new_inst_tag) , .out(inst_tag));
 
 //****************************** Control Unit Instantiation ********************************//
 
@@ -157,7 +175,7 @@ module IDU_WRAPPER #(
 	DFF #(INST_ADDR_WIDTH) 	pc_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(pc_out_d) , .out(pc_out));
 
 
-//**************************** Arch Reg File Instantiation **********************************//
+//**************************** Register Alias Table Instantiation **********************************//
 
 	assign dst_reg_active = ~(opcode == S_type || opcode == SB_type || opcode == NOP);
 	assign arch_read_reg_num1 = Chosen_Instruction_Code[0][19:15];
@@ -167,7 +185,7 @@ module IDU_WRAPPER #(
 	logic  issue_allowed;
 	assign issue_allowed = (stalled_valid | new_valid_in) & ~stall;
 
-	ARCH_REG_FILE arch_reg_file (
+	RAT rat (
 		
 		//inputs
 		.clk(clk),

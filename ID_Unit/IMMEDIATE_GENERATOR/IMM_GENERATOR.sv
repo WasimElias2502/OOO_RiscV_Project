@@ -6,7 +6,6 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
-`timescale 1ns/1ns
 
 module IMM_GENERATOR #(
 	ARCH_REG_NUM_WIDTH 		  = `ARCH_REG_NUM_WIDTH,
@@ -45,6 +44,10 @@ module IMM_GENERATOR #(
 			else if(opcode == SB_type) begin
 				immediate = {Instruction_code[31],Instruction_code[7],Instruction_code[30:25],Instruction_code[11:8],1'b0};
 				imm_width = 13;
+			end
+			else begin
+				immediate = 0;
+				imm_width = 1;
 			end
 		end
  

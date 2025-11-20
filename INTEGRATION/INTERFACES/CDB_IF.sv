@@ -1,3 +1,5 @@
+
+
 interface CDB_IF;
 
 	logic 								ready							;

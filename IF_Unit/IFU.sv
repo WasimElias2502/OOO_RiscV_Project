@@ -5,7 +5,6 @@
  * Creation date : May 26, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
-`timescale 1ns/1ns
 
 module IFU #(
 	FETCH_WIDTH = `FETCH_WIDTH, 				// Number of instruction to fetch

@@ -1,10 +1,6 @@
 `ifndef __RS_TB_SV__ 
 `define __RS_TB_SV__ 
 
-
-
-`timescale 1ns/1ns
-
 module RS_TB #(
 	
 	parameter FU_IDX_WIDTH  = (`NUM_OF_ALUS <= 1) ? 1 : $clog2(`NUM_OF_ALUS)

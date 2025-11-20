@@ -1,5 +1,4 @@
 
-`timescale 1ns/1ns
 
 interface FU_IF #(
 	parameter NUM_OF_FU 

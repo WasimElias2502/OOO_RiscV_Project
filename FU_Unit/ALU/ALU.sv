@@ -108,14 +108,18 @@ module ALU #(
 		
 		if(reset) begin
 			alu_valid		 		= 1'b0						;
+			pc_out_valid 			= 1'b0						;
 		end
 		else begin
 			if(counter == 0 && curr_inst_valid) begin
 				if(curr_inst_is_branch) begin
-					pc_out_valid 		= is_curr_branch_taken	;
+					pc_out_valid 	= is_curr_branch_taken	;
+					alu_valid		= 1'b0				  	;
+
 				end
 				else begin
 					alu_valid		= 1'b1				  		;
+					pc_out_valid	= 1'b0						;
 				end
 			end	
 			
@@ -141,9 +145,17 @@ module ALU #(
 		
 		if(reset) begin
 			alu_ready = 1'b1;
+			curr_result_val = 0		;
+			is_branch_taken = 1'b0	;
+			curr_pc_out 	= 0		;
 		end
 		
 		else begin
+			
+			curr_result_val = 0		;
+			is_branch_taken = 1'b0	;
+			curr_pc_out 	= 0		;
+			alu_ready		= 0 	;
 			
 			if(rs_valid) begin	
 				

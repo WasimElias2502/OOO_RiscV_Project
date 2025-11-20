@@ -1,30 +1,29 @@
 
-`timescale 1ns/1ns
+
 
 interface COMMIT_IF #();
 
-	logic [`ROB_SIZE_WIDTH-1:0]				commited_tags		[`MAX_NUM_OF_COMMITS-1:0]	;
-	logic [`MAX_NUM_OF_COMMITS-1:0]			commited_tags_valid								;	 
-	logic [`ROB_SIZE_WIDTH-1:0]				new_inst_tag									;
-	logic 									new_inst_tag_valid								;
-
-
-
+	logic [`ROB_SIZE_WIDTH-1:0]				commit_tag				[`MAX_NUM_OF_COMMITS-1:0]					;
+	logic [`ARCH_REG_NUM_WIDTH-1:0]			commit_arch_reg_addr	[`MAX_NUM_OF_COMMITS-1:0]					;
+	logic [`PHYSICAL_REG_NUM_WIDTH-1:0]		commit_phy_reg_addr		[`MAX_NUM_OF_COMMITS-1:0]					;
+	logic [`REG_VAL_WIDTH-1:0]				commit_value			[`MAX_NUM_OF_COMMITS-1:0]					;
+	logic [`MAX_NUM_OF_COMMITS-1:0]			commit_valid														;	 
 
 
 	modport master(
-		output 		commited_tags,
-		output 		commited_tags_valid,
-		input		new_inst_tag,
-		input		new_inst_tag_valid
-
+		output 		commit_tag,
+		output 		commit_valid,
+		output		commit_arch_reg_addr,
+		output		commit_phy_reg_addr,
+		output		commit_value
 	);
 	
 	modport slave(
-		input 		commited_tags,
-		input 		commited_tags_valid,
-		output		new_inst_tag,
-		output		new_inst_tag_valid
+		input 		commit_tag,
+		input 		commit_valid,
+		input 		commit_arch_reg_addr,
+		input		commit_phy_reg_addr,
+		input		commit_value
 	);
 
 

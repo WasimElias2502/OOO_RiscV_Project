@@ -6,8 +6,6 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
-`timescale 1ns/1ns
-
 (* verilator_dpi = "off", verdiHierarchyHide = 1 *)
 
 

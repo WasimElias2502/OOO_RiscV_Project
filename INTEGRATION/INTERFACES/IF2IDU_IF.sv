@@ -1,7 +1,7 @@
 `ifndef __IF2IDU_IF_SV_ 
 `define __IF2IDU_IF_SV_
 
-`timescale 1ns/1ns
+
 
 interface IF2IDU_IF ;
 

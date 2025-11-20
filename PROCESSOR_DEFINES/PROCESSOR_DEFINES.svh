@@ -8,6 +8,8 @@
 `ifndef  __PROCESSOR_DEFINES__
 `define  __PROCESSOR_DEFINES__
 
+	`timescale 1ns/1ns
+
 	//*************************** General Defines *******************************//
 	
 	
@@ -26,6 +28,7 @@
 	//******************** Decode & Register Renaming Defines *******************//
 	`define ARCH_REG_NUM_WIDTH			5					   
 	`define PHYSICAL_REG_NUM_WIDTH		6
+	`define ARCH_REG_NUM				(1<<`ARCH_REG_NUM_WIDTH)
 	`define PHYSICAL_REG_NUM			(1<<`PHYSICAL_REG_NUM_WIDTH)
 	`define NO_OLD_PRF 					(1<<`PHYSICAL_REG_NUM_WIDTH)
 	`define IMM_WIDTH					12
@@ -47,7 +50,7 @@
 	`define NUM_OF_ALUS					3
 	`define NUM_OF_MEM					1
 	`define NUM_OF_FU					(`NUM_OF_ALUS+`NUM_OF_MEM)
-	`define	LOW_LATENCY_CYCLES			3
+	`define	LOW_LATENCY_CYCLES			1
 	`define HIGH_LATENCY_CYCLES			5
 	
 	//************************ ReOrder Buffer Defines ****************************//

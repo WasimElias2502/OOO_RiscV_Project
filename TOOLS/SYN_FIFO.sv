@@ -7,8 +7,6 @@
  *------------------------------------------------------------------------------*/
 
 
-`timescale 1ns/1ns
-
 module SYN_FIFO #(
 	parameter DATA_WIDTH = 32,
 	parameter ADDR_WIDTH = 4, // log2(FIFO_DEPTH)

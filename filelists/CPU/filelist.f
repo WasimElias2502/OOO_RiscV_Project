@@ -1,0 +1,11 @@
+-f $DESIGN/filelists/PROCESSOR_DEFINES/filelist.f
+-f $DESIGN/filelists/INTERFACES/filelist.f
+-f $DESIGN/filelists/TOOLS/filelist.f
+-f $DESIGN/filelists/ARCH_REGFILE/filelist.f
+-f $DESIGN/filelists/BRANCH_MISPRED_UNIT/filelist.f
+-f $DESIGN/filelists/FU_Unit/filelist.f
+-f $DESIGN/filelists/ID_Unit/filelist.f
+-f $DESIGN/filelists/IF_Unit/filelist.f
+-f $DESIGN/filelists/PHY_REGFILE/filelist.f
+-f $DESIGN/filelists/RS_Unit/filelist.f
+$DESIGN/CPU/CPU.sv

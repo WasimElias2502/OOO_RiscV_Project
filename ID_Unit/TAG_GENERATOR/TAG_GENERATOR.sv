@@ -6,7 +6,7 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
-module RS_TAG_GENERATOR #() (
+module TAG_GENERATOR #() (
 	
 	input 									clk												,
 	input 									reset											,	

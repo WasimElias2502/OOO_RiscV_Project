@@ -19,39 +19,14 @@ module RS_UNIT_WRAPPER #() (
 	input [`REG_VAL_WIDTH-1:0]			immediate						,
 	input								new_valid_inst					,
 	input [`INST_ADDR_WIDTH-1:0]		pc_in							,
+	input [`ROB_SIZE_WIDTH-1:0]			new_inst_tag					,
 		
-	output								rob_full						,
 	
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
 	FU_IF.RS							alu_if 	 						,
-	FU_IF.RS							mem_if 	 						,
-	COMMIT_IF.slave						commit_if						
-
+	FU_IF.RS							mem_if 	 						
 );
 	//TODO: add if RS are full then stall the pipe
-	
-	
-	//====================================== Reservation Station TAG generator ============================ //
-	
-	logic [`ROB_SIZE_WIDTH-1:0]			new_inst_tag		;
-	logic								new_inst_tag_valid	;
-	
-	assign commit_if.new_inst_tag		= new_inst_tag		;
-	assign commit_if.new_inst_tag_valid = new_inst_tag_valid;
-	
-	RS_TAG_GENERATOR instruction_tag_allocator(
-		
-		.clk					(clk),
-		.reset					(reset),
-		.new_valid_inst			(new_valid_inst),
-		
-		.commited_tags_valid	(commit_if.commited_tags_valid),
-		.commited_tags			(commit_if.commited_tags),
-		.new_inst_tag			(new_inst_tag),
-		.new_inst_tag_valid		(new_inst_tag_valid),
-		.rob_full				(rob_full)
-		);
-	
 	
 
 	//========================================= Register Status Instatiation ============================== //

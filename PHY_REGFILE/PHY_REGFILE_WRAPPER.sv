@@ -6,7 +6,6 @@
  * Description   :
  *------------------------------------------------------------------------------*/
 
-`timescale 1ns/1ns
 
 module PHY_REGFILE_WRAPPER #(
 	GENERATED_IMMEDIATE_WIDTH 	= `REG_VAL_WIDTH				// value width for generated immediate
@@ -17,9 +16,7 @@ module PHY_REGFILE_WRAPPER #(
 	input 										reset					,
 	input 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg1_in			,
 	input 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	src_phy_reg2_in			,
-	input 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	wr_commit_reg			,
-	input 										commit_wr_en			,
-	input 	[`REG_VAL_WIDTH-1:0]    			commit_wr_val 			,
+	CDB_IF.slave								CDB_if					,
 	input 	[`PHYSICAL_REG_NUM_WIDTH-1:0]    	dst_phy_reg_in 			,
 	input 	control_t						  	control_in				,
 	input 	[`INST_ADDR_WIDTH-1:0] 				pc_in					, 
@@ -27,6 +24,7 @@ module PHY_REGFILE_WRAPPER #(
 	input										flush					,
 	input										valid_inst_in			,
 	input 										stall					,
+	input 	[`ROB_SIZE_WIDTH-1:0]				inst_tag_in				,
 	
 	//output
 	output 	[`REG_VAL_WIDTH-1:0]				src_val1				,
@@ -37,6 +35,7 @@ module PHY_REGFILE_WRAPPER #(
 	output 	control_t						  	control_out				,
 	output 	[`INST_ADDR_WIDTH-1:0] 				pc_out					,
 	output	[GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate_out ,
+	output 	[`ROB_SIZE_WIDTH-1:0]				inst_tag_out			,
 	output										valid_inst_out				
 
 );
@@ -126,9 +125,9 @@ module PHY_REGFILE_WRAPPER #(
 			.reset			(reset),
 			.src_phy_reg1	(chosen_src_phy_reg1_in),
 			.src_phy_reg2	(chosen_src_phy_reg2_in),
-			.dst_wr_en		(commit_wr_en),
-			.dst_phy_reg	(wr_commit_reg),
-			.dst_val		(commit_wr_val),
+			.dst_wr_en		(CDB_if.valid),
+			.dst_phy_reg	(CDB_if.register_addr),
+			.dst_val		(CDB_if.register_val),
 			
 			//output
 			.src_val1		(src_val1_d),
@@ -148,6 +147,7 @@ module PHY_REGFILE_WRAPPER #(
 	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg2_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_src_phy_reg2_in) , .out(src_phy_reg2_out));
 	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		dst_phy_reg_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_dst_phy_reg_in) , .out(dst_phy_reg_out));
 	DFF #(`INST_ADDR_WIDTH) 			pc_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_pc_in) , .out(pc_out));
+	DFF #(`ROB_SIZE_WIDTH)				tag_ff			(.clk(clk) , .rst (reset), .enable(1) , .in(inst_tag_in) , .out(inst_tag_out) );
 	DFF #(GENERATED_IMMEDIATE_WIDTH) 	immediate_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_generated_immediate_in) , .out(generated_immediate_out));
 	
 	//DFF

@@ -1,14 +1,13 @@
 /*------------------------------------------------------------------------------
- * File          : ARCH_REG_FILE.sv
+ * File          : RAT.sv
  * Project       : RTL
  * Author        : epwebq
  * Creation date : Jun 2, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
 
-`timescale 1ns/1ns
 
-module ARCH_REG_FILE #(
+module RAT #(
 	ARCH_REG_NUM_WIDTH 	   = `ARCH_REG_NUM_WIDTH, 							// Number of architecture registers
 	PHYSICAL_REG_NUM_WIDTH = `PHYSICAL_REG_NUM_WIDTH						// width (number of bits) of the number of physical registers
 ) (

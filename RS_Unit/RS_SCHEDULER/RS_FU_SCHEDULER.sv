@@ -1,4 +1,3 @@
-`timescale 1ns/1ns
 
 module RS_FU_SCHEDULER #(
 	parameter int NUM_OF_RS,
@@ -22,6 +21,15 @@ module RS_FU_SCHEDULER #(
 		
 		if(rst) begin
 			rs_dispatch_en = '0;
+			fu_assigned    = '0;
+			
+			for (int i = 0; i < NUM_OF_RS; i++) begin
+				rs_fu_idx_internal[i] = '0; 
+			end
+			
+			for (int i = 0; i < NUM_OF_RS; i++) begin
+				rs_fu_assign[i] = 0;
+			end
 		end
 	
 		else begin
