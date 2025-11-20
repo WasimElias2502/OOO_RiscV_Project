@@ -8,4 +8,5 @@
 -f $DESIGN/filelists/IF_Unit/filelist.f
 -f $DESIGN/filelists/PHY_REGFILE/filelist.f
 -f $DESIGN/filelists/RS_Unit/filelist.f
+-f $DESIGN/filelists/ROB/filelist.f
 $DESIGN/CPU/CPU.sv

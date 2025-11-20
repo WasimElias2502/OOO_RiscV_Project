@@ -66,7 +66,7 @@ module CPU #() (
 		.pc_in						(IF2IDU_if.pc),
 		.pc_plus_4_in				(IF2IDU_if.pc_plus_4),
 		.commit_valid				(COMMIT_if.commit_valid),
-		.commit_with_write			(),								// TODO: connect
+		.commit_type				(COMMIT_if.commit_type),								
 		.commited_wr_register		(COMMIT_if.commit_phy_reg_addr),
 		.commit_tag					(COMMIT_if.commit_tag),
 		.flush						(flush),
@@ -80,6 +80,7 @@ module CPU #() (
 		.phy_read_reg_num1			(IDU2PHY_REGFILE_if.phy_read_reg_num1),
 		.phy_read_reg_num2			(IDU2PHY_REGFILE_if.phy_read_reg_num2),
 		.phy_write_reg_num			(IDU2PHY_REGFILE_if.phy_write_reg_num),
+		.dest_arch_register			(IDU2PHY_REGFILE_if.dest_arch_register),
 		.can_rename					(IF2IDU_if.can_rename),
 		.generated_immediate		(IDU2PHY_REGFILE_if.generated_immediate),
 		.new_valid_inst_out			(IDU2PHY_REGFILE_if.valid_inst)
@@ -156,6 +157,21 @@ module CPU #() (
 		.cdb_if						(CDB_if.master)
 	);
 	
+	//************************************* Re Order Buffer Unit *************************************************//
+	
+	ROB rob (
+		.clk						(clk),
+		.reset						(reset),
+		.cdb_if						(CDB_if.slave),
+		.inst_tag					(IDU2PHY_REGFILE_if.inst_tag),
+		.dest_arch_register			(IDU2PHY_REGFILE_if.dest_arch_register),
+		.dest_phy_register			(IDU2PHY_REGFILE_if.phy_write_reg_num),
+		.valid_inst_to_register		(IDU2PHY_REGFILE_if.valid_inst),
+		.control_in					(IDU2PHY_REGFILE_if.control),
+		
+		.commit_if					(COMMIT_if.master)
+	);
+
 	//***************************** Branch Misprediction Unit Instantiation***************************************//
 	
 	BRANCH_MISPRED_UNIT branch_mispred_unit(

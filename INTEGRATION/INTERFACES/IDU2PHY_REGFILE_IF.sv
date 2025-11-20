@@ -11,6 +11,7 @@ interface IDU2PHY_REGFILE_IF;
 	logic [`GENERATED_IMMEDIATE_WIDTH-1:0] 	generated_immediate ;
 	logic 									valid_inst;
 	logic [`ROB_SIZE_WIDTH-1:0]				inst_tag;
+	logic [`ARCH_REG_NUM_WIDTH-1:0] 		dest_arch_register;
 
 endinterface
 

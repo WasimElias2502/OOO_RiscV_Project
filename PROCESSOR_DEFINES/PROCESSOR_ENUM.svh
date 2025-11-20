@@ -48,7 +48,7 @@
 	
 	
 	
-	//****************** Reservation Station Unit Enum *************************//
+	//****************** Reservation Station Unit Entry ************************//
 	
 	typedef struct packed {
 
@@ -66,5 +66,23 @@
 	} reservation_station_t;
 	
 	typedef enum bit{ not_valid = 1'b0 , valid = 1'b1} RS_reg_status;
+	
+	
+	//*********************** Reorder Buffer Entry ***************************//
+	
+	
+	typedef enum bit[1:0] {reg_commit , mem_commit , branch_commit} commit_type_t;
+	
+	typedef struct packed {
+		
+		bit									occupied			;
+		bit [`ARCH_REG_NUM_WIDTH-1:0]		dest_arch_register 	;
+		bit	[`PHYSICAL_REG_NUM_WIDTH]		dest_phy_register	;
+		bit [`REG_VAL_WIDTH-1:0]			dest_arch_val		;
+		bit 								can_commit			;
+		commit_type_t						commit_type			;							
+		
+	} ROB_entry_t;
+	
 	
 `endif
