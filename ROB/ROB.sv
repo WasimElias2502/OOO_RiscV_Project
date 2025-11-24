@@ -64,13 +64,13 @@ module ROB #() (
 				
 				//decide commit type
 				if(control_in.reg_wb && control_in.memory_op != mem_write) begin
-					rob_entries[inst_tag].commit_type <= reg_commit;
+					rob_entries[inst_tag].commit_type <= reg_commit_wb;
 				end
 				else if(!control_in.reg_wb && control_in.memory_op == mem_write) begin
 					rob_entries[inst_tag].commit_type <= mem_commit;
 				end
 				else if(control_in.is_branch_op) begin
-					rob_entries[inst_tag].commit_type <= branch_commit;
+					rob_entries[inst_tag].commit_type <= branch_commit_not_taken;
 				end
 				
 				
@@ -80,8 +80,24 @@ module ROB #() (
 			for(int i=0 ; i< `NUM_OF_FU ; i++) begin
 				if(cdb_if.valid[i]) begin
 					
-					rob_entries[cdb_if.inst_tag[i]].dest_arch_val <= cdb_if.register_val[i]	;
-					rob_entries[cdb_if.inst_tag[i]].can_commit	  <= 1'b1					;
+					//REG COMMIT
+					if(rob_entries[cdb_if.inst_tag[i]].commit_type == reg_commit_wb) begin
+						rob_entries[cdb_if.inst_tag[i]].dest_val 		<= cdb_if.register_val[i]	;
+						rob_entries[cdb_if.inst_tag[i]].can_commit	  	<= 1'b1						;
+					end
+					
+					//BRANCH COMMIT
+					if(rob_entries[cdb_if.inst_tag[i]].commit_type == branch_commit_not_taken) begin
+						
+						//Branch taken
+						if(cdb_if.branch_taken_out[i]) begin
+							rob_entries[cdb_if.inst_tag[i]].dest_val		<= cdb_if.pc_out[i]			;
+							rob_entries[cdb_if.inst_tag[i]].commit_type		<= branch_commit_taken		;
+						end
+						
+						
+						rob_entries[cdb_if.inst_tag[i]].can_commit	  		<= 1'b1						;
+					end
 					
 				end
 			end
@@ -104,13 +120,18 @@ module ROB #() (
 						commit_if.commit_tag[i] 			<= curr_ind									;
 						commit_if.commit_arch_reg_addr[i] 	<= rob_entries[curr_ind].dest_arch_register	;
 						commit_if.commit_valid[i]			<= 1'b1										;
-						commit_if.commit_value[i]			<= rob_entries[curr_ind].dest_arch_val		;
+						commit_if.commit_value[i]			<= rob_entries[curr_ind].dest_val			;
 						commit_if.commit_type[i]			<= rob_entries[curr_ind].commit_type		;
 						commit_if.commit_phy_reg_addr[i]	<= rob_entries[curr_ind].dest_phy_register	;
 						
 						//free entry
 						rob_entries[curr_ind].can_commit	<= 1'b0										;
 						rob_entries[curr_ind].occupied		<= 1'b0										;
+						
+						//COMMITED max num of commits
+						if(i == (`MAX_NUM_OF_COMMITS-1)) begin
+							next_commit_ptr 				<= (curr_ind+1)	% (`ROB_SIZE);				;
+						end
 					end
 					else begin
 						stop_commit 						= 1'b1										;
