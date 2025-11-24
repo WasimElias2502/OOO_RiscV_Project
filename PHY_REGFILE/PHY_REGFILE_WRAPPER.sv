@@ -58,6 +58,8 @@ module PHY_REGFILE_WRAPPER #(
 	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	stalled_generated_immediate_in	;
 	logic										stalled_valid					;
 	
+	//TODO: check tag stall
+	
 	
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin

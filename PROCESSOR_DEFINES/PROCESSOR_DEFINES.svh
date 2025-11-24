@@ -13,7 +13,7 @@
 	//*************************** General Defines *******************************//
 	
 	
-	`define INST_ADDR_WIDTH 			6						// Addess width of the instruction memory
+	`define INST_ADDR_WIDTH 			10						// Addess width of the instruction memory
 	`define FETCH_WIDTH 				1						// Number of instruction to fetch
 	`define REG_VAL_WIDTH				32
 	`define GENERATED_IMMEDIATE_WIDTH  `REG_VAL_WIDTH

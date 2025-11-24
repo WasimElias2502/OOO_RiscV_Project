@@ -71,14 +71,14 @@
 	//*********************** Reorder Buffer Entry ***************************//
 	
 	
-	typedef enum bit[1:0] {reg_commit , mem_commit , branch_commit} commit_type_t;
+	typedef enum bit[2:0] {reg_commit_wb , mem_commit , branch_commit_taken , branch_commit_not_taken} commit_type_t;
 	
 	typedef struct packed {
 		
 		bit									occupied			;
 		bit [`ARCH_REG_NUM_WIDTH-1:0]		dest_arch_register 	;
 		bit	[`PHYSICAL_REG_NUM_WIDTH]		dest_phy_register	;
-		bit [`REG_VAL_WIDTH-1:0]			dest_arch_val		;
+		bit [`REG_VAL_WIDTH-1:0]			dest_val			;
 		bit 								can_commit			;
 		commit_type_t						commit_type			;							
 		
