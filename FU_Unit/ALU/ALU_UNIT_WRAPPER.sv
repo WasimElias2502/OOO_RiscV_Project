@@ -36,12 +36,12 @@ module ALU_UNIT_WRAPPER #() (
 				.new_inst_tag_in	(alu_if.new_inst_tag[i]),
 				
 				//OUT
-				.result_val			(cdb_if.register_val[i]), //TODO: remeber that CDB is common for ALU's and D_MEM's
+				.result_val			(cdb_if.register_val[i]), 		//TODO: remeber that CDB is common for ALU's and D_MEM's
 				.result_addr		(cdb_if.register_addr[i]),
 				.alu_valid			(cdb_if.valid[i]),
 				.new_inst_tag_out	(cdb_if.inst_tag[i]),
-				.pc_out				(), //TODO: connect to  branch misprediction unit
-				.pc_out_valid		()	//TODO: connect to  branch misprediction unit
+				.pc_out				(cdb_if.pc_out[i]), 			//TODO: connect to  branch misprediction unit
+				.branch_taken_out	(cdb_if.branch_taken_out[i]) 	//TODO: connect to  branch misprediction unit
 			);
 		end
 	endgenerate

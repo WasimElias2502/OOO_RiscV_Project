@@ -27,7 +27,7 @@ module ALU_TB #() ();
 	
 	// to branch misprediction unit
 	logic [`INST_ADDR_WIDTH-1:0] 			pc_out 		;
-	logic									pc_out_valid;// TODO: CHECK VALID
+	logic									branch_taken_out;// TODO: CHECK VALID
 	
 	
 	
@@ -51,7 +51,7 @@ module ALU_TB #() ();
 		.result_addr		(result_addr),
 		.alu_valid			(alu_valid),
 		.pc_out				(pc_out),
-		.pc_out_valid		(pc_out_valid)
+		.branch_taken_out	(branch_taken_out)	
 	);
 	
 	

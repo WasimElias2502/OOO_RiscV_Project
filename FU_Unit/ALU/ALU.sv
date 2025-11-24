@@ -36,7 +36,8 @@ module ALU #(
 	
 	// to branch misprediction unit
 	output 	logic [`INST_ADDR_WIDTH-1:0] 			pc_out 		,
-	output 	logic									pc_out_valid,// TODO: CHECK VALID
+	output 	logic									branch_taken_out,
+	
 	output	logic [`ROB_SIZE_WIDTH-1:0]				new_inst_tag_out
 
 
@@ -108,26 +109,26 @@ module ALU #(
 		
 		if(reset) begin
 			alu_valid		 		= 1'b0						;
-			pc_out_valid 			= 1'b0						;
+			branch_taken_out 		= 1'b0						;
 		end
 		else begin
 			alu_valid		 		= 1'b0						;
-			pc_out_valid 			= 1'b0						;
+			branch_taken_out 		= 1'b0						;
 			
 			if(counter == 0 && curr_inst_valid) begin
 				if(curr_inst_is_branch) begin
-					pc_out_valid 	= is_curr_branch_taken		;
-					alu_valid		= 1'b0				  		;
+					branch_taken_out= is_curr_branch_taken		;
+					alu_valid		= 1'b1				  		;
 
 				end
 				else begin
 					alu_valid		= 1'b1				  		;
-					pc_out_valid	= 1'b0						;
+					branch_taken_out= 1'b0						;
 				end
 			end	
 			
 			else begin
-				pc_out_valid 		= 1'b0						;
+				branch_taken_out 	= 1'b0						;
 				alu_valid		 	= 1'b0				  		;
 			end
 			
@@ -173,10 +174,10 @@ module ALU #(
 						curr_result_val = src1_val - src2_val;
 					end
 					sll_op: begin
-						curr_result_val = src1_val << src2_val;
+						curr_result_val = src1_val << src2_val [4:0];
 					end
 					slt_op: begin
-						curr_result_val = (src1_val < src2_val)? 1 : 0;
+						curr_result_val = ($signed(src1_val) < $signed(src2_val))? 1 : 0;
 					end
 					sltu_op: begin
 						curr_result_val = (src1_val < src2_val)? 1 : 0;
@@ -185,10 +186,10 @@ module ALU #(
 						curr_result_val = src1_val ^ src2_val;
 					end
 					srl_op: begin
-						curr_result_val = src1_val >> src2_val;
+						curr_result_val = src1_val >> src2_val [4:0];
 					end
 					sra_op: begin
-						curr_result_val = src1_val >> src2_val;
+						curr_result_val =  $signed(src1_val) >> src2_val [4:0];
 					end
 					or_op: begin
 						curr_result_val = src1_val | src2_val;
@@ -198,25 +199,25 @@ module ALU #(
 					end
 					eq_op: begin
 						if(src1_val == src2_val && control.is_branch_op) begin
-							curr_pc_out = pc_in + {immediate,1'b0};
+							curr_pc_out = pc_in + immediate;
 							is_branch_taken = 1'b1;
 						end
 					end
 					not_eq_op: begin
 						if(src1_val != src2_val && control.is_branch_op) begin
-							curr_pc_out = pc_in + {immediate,1'b0};
+							curr_pc_out = pc_in + immediate;
 							is_branch_taken = 1'b1;
 						end
 					end
 					less_than_op: begin
-						if(src1_val < src2_val && control.is_branch_op) begin
-							curr_pc_out = pc_in + {immediate,1'b0};
+						if($signed(src1_val) < $signed(src2_val) && control.is_branch_op) begin
+							curr_pc_out = pc_in + immediate;
 							is_branch_taken = 1'b1;
 						end
 					end
 					greater_equal_than_op: begin
-						if(src1_val >= src2_val && control.is_branch_op) begin
-							curr_pc_out = pc_in + {immediate,1'b0};
+						if($signed(src1_val) >= $signed(src2_val) && control.is_branch_op) begin
+							curr_pc_out = pc_in + immediate;
 							is_branch_taken = 1'b1;
 						end
 					end
