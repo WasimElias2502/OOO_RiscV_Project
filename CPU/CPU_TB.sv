@@ -11,6 +11,7 @@ module CPU_TB #() ();
 	//reset & clk
 	logic 										clk , reset							;
 	ARCH_REG_READ_IF							ARCH_REG_READ_if()					;
+	logic										finish								;
 	
 	
 	
@@ -18,7 +19,8 @@ module CPU_TB #() ();
 	CPU cpu(
 		.clk				(clk),
 		.reset				(reset),
-		.ARCH_REG_READ_if	(ARCH_REG_READ_if.slave) 
+		.ARCH_REG_READ_if	(ARCH_REG_READ_if.slave), 
+		.finish				(finish)
 	
 	);
 	
@@ -34,8 +36,59 @@ module CPU_TB #() ();
 		begin
 			reset = 1'b1;
 			#35 reset = 1'b0;
-			#1400 reset = 1'b1;
+			#15000 reset = 1'b1;
 		end
+	
+	//Read Arch register
+	task automatic read_register(
+			input  logic [`ARCH_REG_NUM_WIDTH-1:0] 	reg_idx,
+			output logic [`REG_VAL_WIDTH-1:0] 		data
+	);
+			
+		@(posedge clk);
+		ARCH_REG_READ_if.rd_en 					<= 1'b1		;
+		ARCH_REG_READ_if.read_red_addr_req 		<= reg_idx	;
+		
+		@(posedge clk);
+		while(!ARCH_REG_READ_if.read_valid) begin
+			@(posedge clk);
+		end
+		
+		data = ARCH_REG_READ_if.read_value					;
+		
+		
+		ARCH_REG_READ_if.rd_en 					<= 1'b0		;
+	
+	endtask
+	
+	//Dump Regfile
+	task automatic dump_regfile();
+		
+		logic [`REG_VAL_WIDTH-1:0] 		data;
+		
+		//go over all regs
+		for (int reg_idx=0 ; reg_idx<`ARCH_REG_NUM ; reg_idx++) begin
+			read_register( reg_idx , data);
+			$display("[CPU_DEBUG] READ REG[%0d] = %0h\n" , reg_idx , data);
+		end
+		
+	endtask
+	
+	// Simulation 
+	initial begin
+		
+		
+		ARCH_REG_READ_if.rd_en 				= 1'b0;
+		ARCH_REG_READ_if.read_red_addr_req 	= '0;
+		
+		//Monitor FINISH indication of code
+		@(posedge finish);
+		$display("[CPU_DEBUG] Finish code at time: %t\n" , $time );
+		
+		dump_regfile();
+
+	end
+	
 	
 	//Setting Up waveform
 	initial
@@ -46,7 +99,7 @@ module CPU_TB #() ();
 	
 	//end test after 500ns 
 	initial 
-		#1500 $finish;
+		#20000 $finish;
 
 
 endmodule

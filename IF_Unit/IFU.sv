@@ -18,6 +18,7 @@ module IFU #(
 	input [INST_ADDR_WIDTH-1:0] UJ_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] JALR_Type_addr,
 	input 						stall,
+	input						flush,
 	//outputs
 	output [31:0] Instruction_Code [FETCH_WIDTH-1:0],
 	output [INST_ADDR_WIDTH-1:0] pc_out,
@@ -69,7 +70,7 @@ module IFU #(
 			end
 			//selector for PC - branches or PC+4
 			else begin
-				if(!stall && !stop_fetch) begin
+				if((!stall && !stop_fetch) || (stall && flush)) begin
 					case(next_pc_sel)
 						sb		 	: PC <= SB_Type_addr;
 						uj		 	: PC <= UJ_Type_addr;

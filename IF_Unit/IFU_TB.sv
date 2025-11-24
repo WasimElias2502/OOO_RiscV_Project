@@ -20,7 +20,7 @@ module IFU_TB #() ();
 	reg new_valid_inst;
 	
 	//DUT
-	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , stall ,Instruction_Code , pc , pc_plus_4 ,new_valid_inst);
+	IFU inst_fetch_unit(clk,reset,next_pc_sel,sb_type_addr , uj_type_addr , jalr_type_addr , stall, flush ,Instruction_Code , pc , pc_plus_4 ,new_valid_inst);
 	
 	
 	//Setting Up waveform

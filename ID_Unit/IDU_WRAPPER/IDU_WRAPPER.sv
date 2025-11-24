@@ -74,6 +74,8 @@ module IDU_WRAPPER #(
 	//cannot rename (RAT -> control unit)
 	logic 										can_rename_to_ctrl_unit;
 	
+	logic  issue_allowed;
+	
 //****************************** Internal Control Signals  *********************************//
 
 	logic 										dst_reg_active;
@@ -108,11 +110,13 @@ module IDU_WRAPPER #(
 				stalled_pc_in				<= pc_in;
 			end
 			
-			else if (stalled_valid && ~stall) begin
+			else if ((stalled_valid && ~stall) || flush) begin
 				stalled_valid <= 1'b0; // release the stall
 			end
 		end
 	end
+	
+	//TODO: check tag stall
 	
 	
 	//Mux to choose between stalled instruction and new instruction
@@ -129,7 +133,7 @@ module IDU_WRAPPER #(
 		
 		.clk					(clk),
 		.reset					(reset),
-		.new_valid_inst			(new_valid_in),
+		.new_valid_inst			(issue_allowed),
 		
 		.commited_tags_valid	(commit_valid),
 		.commited_tags			(commit_tag),
@@ -188,14 +192,13 @@ module IDU_WRAPPER #(
 	assign arch_read_reg_num2 = Chosen_Instruction_Code[0][24:20];
 	assign arch_write_reg_num = Chosen_Instruction_Code[0][11:7];
 	
-	logic  issue_allowed;
 	assign issue_allowed = (stalled_valid | new_valid_in) & ~stall;
 	
 	logic [`MAX_NUM_OF_COMMITS-1:0]				commit_with_write;
 	
 	always_comb begin
 		for(int i=0 ; i<`MAX_NUM_OF_COMMITS ; i++ ) begin
-			commit_with_write[i] = (commit_type[i] == reg_commit);
+			commit_with_write[i] = (commit_type[i] == reg_commit_wb);
 		end
 	end
 

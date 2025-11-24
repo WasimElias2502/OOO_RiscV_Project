@@ -17,7 +17,8 @@ module IFU_WRAPPER #(
 	input [INST_ADDR_WIDTH-1:0] SB_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] UJ_Type_addr,
 	input [INST_ADDR_WIDTH-1:0] JALR_Type_addr,
-	input 						stall,				
+	input 						stall,
+	input 						flush,
 	//outputs
 	output						 seen_last_inst,
 	output [31:0] 				 Instruction_Code [FETCH_WIDTH-1:0],
@@ -45,6 +46,7 @@ module IFU_WRAPPER #(
 		.UJ_Type_addr			(UJ_Type_addr),
 		.JALR_Type_addr			(JALR_Type_addr),
 		.stall					(stall),
+		.flush					(flush),
 		
 		//outputs
 		.Instruction_Code		(Instruction_Code_d),
