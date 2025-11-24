@@ -38,7 +38,7 @@ module ARCH_REGFILE #() (
 		
 		else begin
 			//write for destination register
-			for (int i=0 ; i< `ARCH_REG_NUM ; i++) begin
+			for (int i=0 ; i< `MAX_NUM_OF_COMMITS ; i++) begin
 				if(dst_wr_en[i]) begin
 					registers[dst_reg[i]] <= dst_val[i];
 				end

@@ -29,7 +29,7 @@ module ARCH_REGFILE_WRAPPER #() (
 	
 	always_comb begin
 		for (int i=0 ; i< `MAX_NUM_OF_COMMITS ; i++) begin
-			arch_regfile_wr_en[i] = commit_if.commit_valid[i] & (commit_if.commit_type[i] == reg_commit);
+			arch_regfile_wr_en[i] = commit_if.commit_valid[i] & (commit_if.commit_type[i] == reg_commit_wb);
 		end
 	end
 	
