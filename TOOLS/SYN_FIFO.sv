@@ -43,7 +43,7 @@ module SYN_FIFO #(
 	logic [ADDR_WIDTH:0]   fill_count_reg;   // Stores number of elements in FIFO
 	logic [ADDR_WIDTH:0]   fill_count_next;
 
-	logic [MAX_NUM_OF_WRITES_WIDTH-1:0] num_of_writes;
+	logic [MAX_NUM_OF_WRITES_WIDTH:0] num_of_writes;
 	// --- Combinational Logic for Next State ---
 
 	// Calculate next write pointer
