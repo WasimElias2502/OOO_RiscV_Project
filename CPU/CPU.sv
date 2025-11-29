@@ -13,11 +13,13 @@ module CPU #() (
 	
 	
 	ARCH_REG_READ_IF.slave						ARCH_REG_READ_if		,
+	MEM_IF.CPU									MEM_if					,
 	output logic								finish
 
 );
 
 	//*********************************** Branch Misprediction Unit wires ***********************************// 
+	
 	next_pc_t 									next_pc_sel							;
 	logic										flush								;
 	logic [`INST_ADDR_WIDTH-1:0] 				branch_pc_out						;
@@ -29,21 +31,23 @@ module CPU #() (
 	IDU2PHY_REGFILE_IF 							IDU2PHY_REGFILE_if();
 	PHY_REGFILE2RS_IF							PHY_REGFILE2RS_if();
 	FU_IF# (.NUM_OF_FU(`NUM_OF_ALUS))			ALU_if();
-	FU_IF# (.NUM_OF_FU(`NUM_OF_MEM))			MEM_if();
+	FU_IF# (.NUM_OF_FU(`NUM_OF_MEM))			LOAD_STORE_if();
 	CDB_IF										CDB_if();
 	COMMIT_IF 									COMMIT_if();
-	logic										rob_full; 
-	logic										rob_empty;
-	logic										seen_last_inst;
+	
 
 	//STALL wires
 	logic 										stall_fetch;
 	logic 										stall_decode;
+	logic										rob_full; 
+	logic										rob_empty;
+	logic										seen_last_inst;
 
 	
 	
 	
 	//*************************************** Finish code Logic ********************************************* // 
+	
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin
 			finish <= 1'b0;
@@ -163,7 +167,7 @@ module CPU #() (
 		.pc_in						(PHY_REGFILE2RS_if.pc),
 		.cdb_if						(CDB_if.slave),
 		.alu_if						(ALU_if.RS),
-		.mem_if						(MEM_if.RS)		
+		.mem_if						(LOAD_STORE_if.RS)		
 	);
 	
 	//***************************************** Functional Units *************************************************//
@@ -172,7 +176,14 @@ module CPU #() (
 		.clk						(clk),
 		.reset						(reset),
 		.alu_if						(ALU_if.FU),
-		.cdb_if						(CDB_if.master)
+		.load_store_if				(LOAD_STORE_if.FU),
+		.issued_tag					(IDU2PHY_REGFILE_if.inst_tag),
+		.issue_valid				(IDU2PHY_REGFILE_if.valid_inst),
+		.issue_reg_dst				(IDU2PHY_REGFILE_if.phy_write_reg_num),
+		.issue_mem_op				(IDU2PHY_REGFILE_if.control.memory_op),
+		.commit_if					(COMMIT_if.slave),
+		.cdb_if						(CDB_if.master),
+		.mem_if						(MEM_if)
 	);
 	
 	//************************************* Re Order Buffer Unit *************************************************//
@@ -200,6 +211,8 @@ module CPU #() (
 		.pc_out						(branch_pc_out)
 		
 	);
+	
+	//****************************** Stall Generator Unit Instantiation ***************************************** //
 	
 	STALL_GENERATOR_WRAPPER stall_generator_top(
 		.clk						(clk),

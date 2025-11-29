@@ -40,8 +40,8 @@ module ALU_UNIT_WRAPPER #() (
 				.result_addr		(cdb_if.register_addr[i]),
 				.alu_valid			(cdb_if.valid[i]),
 				.new_inst_tag_out	(cdb_if.inst_tag[i]),
-				.pc_out				(cdb_if.pc_out[i]), 			//TODO: connect to  branch misprediction unit
-				.branch_taken_out	(cdb_if.branch_taken_out[i]) 	//TODO: connect to  branch misprediction unit
+				.pc_out				(cdb_if.pc_out[i]), 			
+				.branch_taken_out	(cdb_if.branch_taken_out[i])
 			);
 		end
 	endgenerate

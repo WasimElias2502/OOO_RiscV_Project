@@ -33,7 +33,7 @@
 	typedef enum bit [`ALU_OP_WIDTH-1:0]	{add_op ,sub_op ,sll_op,slt_op ,sltu_op, xor_op, srl_op, sra_op, or_op, and_op,
 				  							 eq_op , not_eq_op , less_than_op , greater_equal_than_op} alu_op_t ;
 	
-	typedef enum {no_mem_op ,mem_read , mem_write}  memory_op_t;
+	typedef enum bit [1:0]{no_mem_op ,mem_read , mem_write}  memory_op_t;
 	
 	typedef struct packed{
 		
@@ -83,6 +83,24 @@
 		commit_type_t						commit_type			;							
 		
 	} ROB_entry_t;
+	
+	//******************** Load Store Queue Entry **************************** //
+	
+	typedef enum bit[1:0] { waiting , executing , forwarded , done } mem_op_status_t;		
+	
+	typedef struct packed {
+		bit 								occupied			;
+		bit 								dispatched			;
+		memory_op_t 						req_mem_op_type		;
+		bit [`D_MEMORY_ADDR_WIDTH-1:0]		req_address			;
+		bit [`PHYSICAL_REG_NUM_WIDTH-1:0] 	req_reg_dst			;
+		bit [`REG_VAL_WIDTH-1:0]			store_req_data		;
+		bit [`REG_VAL_WIDTH-1:0]			load_req_data		;
+		bit [`REG_VAL_WIDTH-1:0]			fw_load_req_data	;
+		bit 								ready_to_execute	;
+		bit 								was_forwarded		;
+		bit 								completed			;
+	} LSQ_entry_t;
 	
 	
 `endif
