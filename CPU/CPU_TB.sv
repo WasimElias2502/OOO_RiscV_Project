@@ -11,20 +11,30 @@ module CPU_TB #() ();
 	//reset & clk
 	logic 										clk , reset							;
 	ARCH_REG_READ_IF							ARCH_REG_READ_if()					;
+	MEM_IF										MEM_if()							;
 	logic										finish								;
 	
 	
-	
+	// ==================================================== CPU ============================================== // 
 	
 	CPU cpu(
 		.clk				(clk),
 		.reset				(reset),
 		.ARCH_REG_READ_if	(ARCH_REG_READ_if.slave), 
+		.MEM_if				(MEM_if.CPU),
 		.finish				(finish)
 	
 	);
 	
+	// ================================================ D_MEMORY ============================================== //
 	
+	D_MEMORY_WRAPPER data_memory(
+		.clk				(clk),
+		.reset				(reset),
+		.mem_if				(MEM_if.MEM)
+	);
+	
+	// ========================================== Clk and Reset assigns ======================================= // 
 	initial begin
 		clk = 1'b0; // Ensure clk is explicitly 0 at time 0
 	end
@@ -38,6 +48,9 @@ module CPU_TB #() ();
 			#35 reset = 1'b0;
 			#15000 reset = 1'b1;
 		end
+	
+	
+	// ========================================== Register Read Tasks =+====================================== // 
 	
 	//Read Arch register
 	task automatic read_register(
@@ -74,7 +87,7 @@ module CPU_TB #() ();
 		
 	endtask
 	
-	// Simulation 
+	// ============================================ Stimuli ===================================================== //
 	initial begin
 		
 		

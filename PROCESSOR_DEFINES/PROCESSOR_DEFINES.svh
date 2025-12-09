@@ -17,6 +17,8 @@
 	`define FETCH_WIDTH 				1						// Number of instruction to fetch
 	`define REG_VAL_WIDTH				32
 	`define GENERATED_IMMEDIATE_WIDTH  `REG_VAL_WIDTH
+	`define D_MEMORY_ADDR_WIDTH			32
+	`define D_MEMORY_SIZE 				(1<<`D_MEMORY_ADDR_WIDTH)
 	
 	
 	//****************** Instruction Fetch Unit Defines *************************//
@@ -58,6 +60,12 @@
 	`define ROB_SIZE					(1<<`ROB_SIZE_WIDTH)
 	`define MAX_NUM_OF_COMMITS_WIDTH	2
 	`define MAX_NUM_OF_COMMITS			(1<<`MAX_NUM_OF_COMMITS_WIDTH)
+	
+	//************************ D_MEMORY Defines ****************************//
+	
+	`define MEMORY_DELAY				50
+	`define MEMORY_DELAY_WIDTH			$bits(`MEMORY_DELAY)
+
 	
 	
 	
