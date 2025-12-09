@@ -34,7 +34,7 @@ module ROB #() (
 	
 	// ************************************ Always FF Logic ****************************************************//
 	
-		// ========================================= insert new inst to ROB ===================================== //
+	// ========================================= insert new inst to ROB ===================================== //
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin
 			next_commit_ptr <= 0;
@@ -67,7 +67,7 @@ module ROB #() (
 					rob_entries[inst_tag].commit_type <= reg_commit_wb;
 				end
 				else if(!control_in.reg_wb && control_in.memory_op == mem_write) begin
-					rob_entries[inst_tag].commit_type <= mem_commit;
+					rob_entries[inst_tag].commit_type <= store_commit;
 				end
 				else if(control_in.is_branch_op) begin
 					rob_entries[inst_tag].commit_type <= branch_commit_not_taken;
@@ -87,7 +87,7 @@ module ROB #() (
 					end
 					
 					//BRANCH COMMIT
-					if(rob_entries[cdb_if.inst_tag[i]].commit_type == branch_commit_not_taken) begin
+					else if(rob_entries[cdb_if.inst_tag[i]].commit_type == branch_commit_not_taken) begin
 						
 						//Branch taken
 						if(cdb_if.branch_taken_out[i]) begin
@@ -98,6 +98,12 @@ module ROB #() (
 						
 						rob_entries[cdb_if.inst_tag[i]].can_commit	  		<= 1'b1						;
 					end
+					
+					//MEMORY COMMIT
+					else if (rob_entries[cdb_if.inst_tag[i]].commit_type == store_commit) begin
+						rob_entries[cdb_if.inst_tag[i]].can_commit	  		<= 1'b1						;
+					end
+					
 					
 				end
 			end

@@ -390,7 +390,7 @@ module LSQ #() (
 			end
 			
 			else if (execute_state == EXECUTE_MEM_OP) begin
-				store_wait_to_exe	 <= (LSQ_BUFFER[execute_ptr].req_mem_op_type == mem_write)  ;
+				store_wait_to_exe	 <= ~(LSQ_BUFFER[execute_ptr].req_mem_op_type == mem_write)  ;
 			end
 		end
 		
