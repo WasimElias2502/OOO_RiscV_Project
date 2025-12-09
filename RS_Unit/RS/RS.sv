@@ -79,7 +79,8 @@ module RS #(
 				end
 				
 				//if it is branch operation should not wait
-				else if(RS_entries[i].control.is_branch_op) begin
+				else if(RS_entries[i].control.is_branch_op && reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid  
+						&& reg_status_table_if.reg_status[RS_entries[i].src_reg2_addr] == valid) begin
 					RS_busy[i] 	= 1'b0 ;
 				end
 				else begin
