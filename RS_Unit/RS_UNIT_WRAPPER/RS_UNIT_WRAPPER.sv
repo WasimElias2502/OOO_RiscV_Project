@@ -38,7 +38,7 @@ module RS_UNIT_WRAPPER #() (
 	RS_UNIT_REG_STATUS#() register_status_table(
 		.reset						(reset)									,
 		.clk						(clk)									,
-		.new_valid_inst				(new_valid_inst)						,
+		.new_valid_inst				(new_valid_inst & control.reg_wb)		,
 		.dst_reg_addr				(dst_reg_addr)							,
 		.reg_status_2_alu_rs_if		(alu_rs2reg_status_table_if.REG_STATUS)	,
 		.reg_status_2_mem_rs_if		(mem_rs2reg_status_table_if.REG_STATUS)	,

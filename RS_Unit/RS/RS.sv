@@ -60,13 +60,24 @@ module RS #(
 			for (int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 				
 				//if need register src2 and src1 and both are valid
-				if(reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid && reg_status_table_if.reg_status[RS_entries[i].src_reg2_addr] == valid && RS_entries[i].control.alu_src == src_reg2) begin
+				if(reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid && reg_status_table_if.reg_status[RS_entries[i].src_reg2_addr] == valid 
+						&& RS_entries[i].control.alu_src == src_reg2 && RS_entries[i].control.memory_op == no_mem_op) begin
 					RS_busy[i] 	= 1'b0 ;
 				end
-				//if need just src1 and it is valid
-				else if(reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid && RS_entries[i].control.alu_src != src_reg2) begin
+				//if need just src1 and it is valid and ALU operation
+				else if(reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid && RS_entries[i].control.alu_src != src_reg2 && RS_entries[i].control.memory_op == no_mem_op) begin
 					RS_busy[i] 	= 1'b0 ;
 				end
+				//if store word
+				else if (RS_entries[i].control.memory_op == mem_write && reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid 
+						&& reg_status_table_if.reg_status[RS_entries[i].src_reg2_addr] == valid) begin
+					RS_busy[i] 	= 1'b0 ;
+				end
+				//if load word
+				else if (RS_entries[i].control.memory_op == mem_read && reg_status_table_if.reg_status[RS_entries[i].src_reg1_addr] == valid) begin
+					RS_busy[i] 	= 1'b0 ;
+				end
+				
 				//if it is branch operation should not wait
 				else if(RS_entries[i].control.is_branch_op) begin
 					RS_busy[i] 	= 1'b0 ;
