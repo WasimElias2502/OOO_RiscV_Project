@@ -14,6 +14,8 @@ module CPU_TB #() ();
 	MEM_IF										MEM_if()							;
 	logic										finish								;
 	
+	logic [31:0] 								cycles_cntr							;
+	
 	
 	// ==================================================== CPU ============================================== // 
 	
@@ -46,7 +48,6 @@ module CPU_TB #() ();
 		begin
 			reset = 1'b1;
 			#35 reset = 1'b0;
-			#15000 reset = 1'b1;
 		end
 	
 	
@@ -87,6 +88,18 @@ module CPU_TB #() ();
 		
 	endtask
 	
+	//Count Cycles
+	task automatic count_cycles();
+		
+		cycles_cntr <= 0;
+		
+		while (!finish) begin
+			@(posedge clk);
+			cycles_cntr <= cycles_cntr+1;
+		end
+		
+	endtask
+	
 	// ============================================ Stimuli ===================================================== //
 	initial begin
 		
@@ -94,11 +107,19 @@ module CPU_TB #() ();
 		ARCH_REG_READ_if.rd_en 				= 1'b0;
 		ARCH_REG_READ_if.read_red_addr_req 	= '0;
 		
-		//Monitor FINISH indication of code
-		@(posedge finish);
-		$display("[CPU_DEBUG] Finish code at time: %t\n" , $time );
+		@(negedge reset);
 		
+		fork
+			count_cycles();
+		join_none
+			
+		
+		//Monitor FINISH indication of code
+		@(posedge finish);		
 		dump_regfile();
+		
+		$display("[CPU_DEBUG] Finish code at time: %t\n" , $time );
+		$display("[CPU_DEBUG] Finish code after %0d cycles \n" , cycles_cntr );
 
 	end
 	
@@ -112,7 +133,7 @@ module CPU_TB #() ();
 	
 	//end test after 500ns 
 	initial 
-		#20000 $finish;
+		#50000 $finish;
 
 
 endmodule
