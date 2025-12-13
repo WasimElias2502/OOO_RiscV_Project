@@ -102,5 +102,13 @@
 		bit 								completed			;
 	} LSQ_entry_t;
 	
+	//************************** Retire Tags Entry **************************** //
+	
+	typedef struct packed {
+		bit 								commited			;
+		bit 								ready_to_retire		;
+		memory_op_t							mem_op				;
+	} TAG_RETIRE_entry_t;
+	
 	
 `endif

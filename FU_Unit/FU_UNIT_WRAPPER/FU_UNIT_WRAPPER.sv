@@ -20,7 +20,11 @@ module FU_UNIT_WRAPPER #() (
 	
 	CDB_IF.master									cdb_if,
 	COMMIT_IF.slave									commit_if,
-	MEM_IF.CPU										mem_if
+	MEM_IF.CPU										mem_if,
+	
+	//Send to Retire Tag Unit
+	output logic 									clear_lsq_entry_valid,
+	output logic [`ROB_SIZE_WIDTH-1:0]				clear_lsq_entry_tag	
 );
 
 
@@ -47,7 +51,10 @@ module FU_UNIT_WRAPPER #() (
 		.rs_2_lsq_if		(load_store_if),
 		.commit_if			(commit_if),
 		.cdb_if				(cdb_if),
-		.mem_if				(mem_if)
+		.mem_if				(mem_if),
+		
+		.clear_lsq_entry_valid 	(clear_lsq_entry_valid),
+		.clear_lsq_entry_tag	(clear_lsq_entry_tag)
 		
 	
 	);

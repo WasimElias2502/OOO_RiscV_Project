@@ -27,7 +27,11 @@ module LOAD_STORE_UNIT_WRAPPER #() (
 	CDB_IF.master								cdb_if,
 	
 	//Memory Interface
-	MEM_IF.CPU									mem_if
+	MEM_IF.CPU									mem_if,
+	
+	//Send to Retire Tag Unit
+	output logic 								clear_lsq_entry_valid,
+	output logic [`ROB_SIZE_WIDTH-1:0]			clear_lsq_entry_tag	
 
 );
 
@@ -84,7 +88,10 @@ module LOAD_STORE_UNIT_WRAPPER #() (
 			.memory_req_valid		(mem_if.memory_req_valid),										
 			.memory_req_op			(mem_if.memory_req_op),										
 			.memory_req_address		(mem_if.memory_req_address),										
-			.memory_req_data		(mem_if.memory_req_data)										
+			.memory_req_data		(mem_if.memory_req_data),
+			
+			.clear_lsq_entry_valid	(clear_lsq_entry_valid),
+			.clear_lsq_entry_tag	(clear_lsq_entry_tag)
 
 		);
 		

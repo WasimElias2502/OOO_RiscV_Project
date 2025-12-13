@@ -26,10 +26,12 @@ module IDU_WRAPPER #(
 	input [`MAX_NUM_OF_COMMITS-1:0]				commit_valid,
 	commit_type_t								commit_type	[`MAX_NUM_OF_COMMITS-1:0],
 	input [PHYSICAL_REG_NUM_WIDTH-1:0] 			commited_wr_register [`MAX_NUM_OF_COMMITS-1:0],
-	input [`ROB_SIZE_WIDTH-1:0]					commit_tag	[`MAX_NUM_OF_COMMITS-1:0],
 	input 										flush,
 	input										new_valid_in,
 	input										stall,
+	
+	input logic									retire_tag_valid,
+	input logic [`ROB_SIZE_WIDTH-1:0]			retire_tag,
 	
 	//control unit output
 	output control_t						  	control,
@@ -135,11 +137,13 @@ module IDU_WRAPPER #(
 		.reset					(reset),
 		.new_valid_inst			(issue_allowed),
 		
-		.commited_tags_valid	(commit_valid),
-		.commited_tags			(commit_tag),
+		.retire_tag_valid		(retire_tag_valid),
+		.retire_tag				(retire_tag),
+		
 		.new_inst_tag			(new_inst_tag),
 		.rob_full				(rob_full),
 		.rob_empty				(rob_empty)
+		
 		);
 	DFF#(`ROB_SIZE_WIDTH) tag_ff	(.clk(clk) , .rst(reset) , .enable(1) , .in(new_inst_tag) , .out(inst_tag));
 

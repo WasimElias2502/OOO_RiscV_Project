@@ -43,7 +43,10 @@ module LSQ #() (
 	output logic								cdb_valid,
 	output logic[`PHYSICAL_REG_NUM_WIDTH-1:0] 	cdb_register_addr,
 	output logic [`REG_VAL_WIDTH-1:0] 			cdb_register_val,
-	output logic [`ROB_SIZE_WIDTH-1:0]			cdb_inst_tag
+	output logic [`ROB_SIZE_WIDTH-1:0]			cdb_inst_tag,
+	
+	output logic 								clear_lsq_entry_valid,
+	output logic [`ROB_SIZE_WIDTH-1:0]			clear_lsq_entry_tag
 );
 
 	typedef enum logic [1:0]{
@@ -347,7 +350,8 @@ module LSQ #() (
 	logic  can_send_store_to_cdb;
 	assign can_send_store_to_cdb = (LSQ_BUFFER[execute_ptr].req_mem_op_type == mem_write)
 									&& LSQ_BUFFER[execute_ptr].dispatched 
-									&& LSQ_BUFFER[execute_ptr].occupied;
+									&& LSQ_BUFFER[execute_ptr].occupied
+									&& mem_ctrl_ready;
 	
 	logic  store_wait_to_exe;
 
@@ -400,6 +404,9 @@ module LSQ #() (
 	// ===================================================== Clear Entry ========================================================= //
 	
 	assign clear_entry = (execute_state == CLEAR_EXECUTE_ENTRY);
+	
+	assign clear_lsq_entry_valid = clear_entry;
+	assign clear_lsq_entry_tag  = (clear_entry)? execute_ptr : '0;
 	
 	// ================================================ FSM for Execute State =================================================== // 
 

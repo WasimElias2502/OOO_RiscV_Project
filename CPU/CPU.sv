@@ -36,12 +36,19 @@ module CPU #() (
 	COMMIT_IF 									COMMIT_if();
 	
 
-	//STALL wires
+	//logics
 	logic 										stall_fetch;
 	logic 										stall_decode;
+	logic 										stall_phy_regfile;
 	logic										rob_full; 
 	logic										rob_empty;
+	logic										rs_full;
 	logic										seen_last_inst;
+	logic										lsq_retire_valid;
+	logic [`ROB_SIZE_WIDTH-1:0]					lsq_retire_tag;
+	logic										retire_tag_valid;
+	logic [`ROB_SIZE_WIDTH-1:0]					retire_tag;
+	
 
 	
 	
@@ -89,10 +96,12 @@ module CPU #() (
 		.commit_valid				(COMMIT_if.commit_valid),
 		.commit_type				(COMMIT_if.commit_type),								
 		.commited_wr_register		(COMMIT_if.commit_phy_reg_addr),
-		.commit_tag					(COMMIT_if.commit_tag),
 		.flush						(flush),
 		.new_valid_in				(IF2IDU_if.valid_inst),
 		.stall						(stall_decode),
+		
+		.retire_tag_valid			(retire_tag_valid),
+		.retire_tag					(retire_tag),
 		
 		.rob_full					(rob_full),
 		.rob_empty					(rob_empty),
@@ -107,6 +116,29 @@ module CPU #() (
 		.generated_immediate		(IDU2PHY_REGFILE_if.generated_immediate),
 		.new_valid_inst_out			(IDU2PHY_REGFILE_if.valid_inst)
 	);
+	
+	
+	
+	//RETIRE TAGS UNIT 
+	//== prevent hazard for TAG retirement before LSQ frees entry for corresponding tag == //
+	
+	RETIRE_TAGS  retire_tags (
+		.clk						(clk),
+		.reset						(reset),
+		
+		.commit_if					(COMMIT_if.slave),
+		
+		.issue_valid				(IDU2PHY_REGFILE_if.valid_inst),
+		.issue_mem_op				(IDU2PHY_REGFILE_if.control.memory_op),
+		.issue_tag					(IDU2PHY_REGFILE_if.inst_tag),
+		
+		.lsq_retire_valid			(lsq_retire_valid),
+		.lsq_retire_tag				(lsq_retire_tag),
+		
+		.retire_tag_valid			(retire_tag_valid),
+		.retire_tag					(retire_tag)
+	);
+	
 	
 	
 	//****************************** Architecture Register file Instantiation *************************************//
@@ -134,7 +166,7 @@ module CPU #() (
 		.inst_tag_in				(IDU2PHY_REGFILE_if.inst_tag),
 		.flush						(flush),
 		.valid_inst_in				(IDU2PHY_REGFILE_if.valid_inst),
-		.stall						(0),
+		.stall						(stall_phy_regfile),
 		
 		
 		.src_val1					(PHY_REGFILE2RS_if.src_reg1_val),
@@ -167,7 +199,8 @@ module CPU #() (
 		.pc_in						(PHY_REGFILE2RS_if.pc),
 		.cdb_if						(CDB_if.slave),
 		.alu_if						(ALU_if.RS),
-		.mem_if						(LOAD_STORE_if.RS)		
+		.mem_if						(LOAD_STORE_if.RS),
+		.rs_full					(rs_full)
 	);
 	
 	//***************************************** Functional Units *************************************************//
@@ -183,7 +216,10 @@ module CPU #() (
 		.issue_mem_op				(IDU2PHY_REGFILE_if.control.memory_op),
 		.commit_if					(COMMIT_if.slave),
 		.cdb_if						(CDB_if.master),
-		.mem_if						(MEM_if)
+		.mem_if						(MEM_if),
+		.clear_lsq_entry_valid		(lsq_retire_valid),
+		.clear_lsq_entry_tag		(lsq_retire_tag)
+		
 	);
 	
 	//************************************* Re Order Buffer Unit *************************************************//
@@ -218,6 +254,7 @@ module CPU #() (
 		.clk						(clk),
 		.reset						(reset),
 		.rob_full					(rob_full),
+		.rs_full					(rs_full),
 		.can_rename					(IF2IDU_if.can_rename),
 		.branch_op_incoming			(IDU2PHY_REGFILE_if.control.is_branch_op),
 		.branch_op_incoming_tag		(IDU2PHY_REGFILE_if.inst_tag),
@@ -225,7 +262,8 @@ module CPU #() (
 		.commit_if					(COMMIT_if.slave),
 		
 		.stall_fetch				(stall_fetch),
-		.stall_decode				(stall_decode)
+		.stall_decode				(stall_decode),
+		.stall_phy_regfile			(stall_phy_regfile)
 	
 	);
 

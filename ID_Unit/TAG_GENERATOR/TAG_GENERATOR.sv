@@ -11,8 +11,9 @@ module TAG_GENERATOR #() (
 	input 									clk												,
 	input 									reset											,	
 	input 									new_valid_inst									,
-	input [`ROB_SIZE_WIDTH-1:0]				commited_tags		[`MAX_NUM_OF_COMMITS-1:0]	,
-	input [`MAX_NUM_OF_COMMITS-1:0]			commited_tags_valid								,
+	
+	input logic								retire_tag_valid								,
+	input logic [`ROB_SIZE_WIDTH-1:0]		retire_tag										,
 	
 	output [`ROB_SIZE_WIDTH-1:0]			new_inst_tag									,
 	output 									new_inst_tag_valid								,
@@ -20,6 +21,7 @@ module TAG_GENERATOR #() (
 	output									rob_empty
 );
 	logic tag_fifo_empty;
+	logic [`ROB_SIZE_WIDTH-1:0]		retire_tag_in[1];
 
 	//************************* Synchronous FIFO instantiation **************************
 	SYN_FIFO #(
@@ -28,14 +30,14 @@ module TAG_GENERATOR #() (
 		.RESET_INITIAL_PUSH_EN(1),
 		.RESET_INITIAL_PUSH_START(0),
 		.RESET_INITIAL_PUSH_COUNT(`ROB_SIZE),
-		.MAX_NUM_OF_WRITES_WIDTH(`MAX_NUM_OF_COMMITS_WIDTH)
+		.MAX_NUM_OF_WRITES_WIDTH(0)
 		
 		) free_tag_fifo (
 			
 			.clk			(clk),
 			.reset			(reset),
-			.wr_en 			(commited_tags_valid),
-			.wr_data 		(commited_tags),
+			.wr_en 			(retire_tag_valid),
+			.wr_data 		(retire_tag_in),
 			.full			(rob_empty),
 			.rd_en 			(new_valid_inst),
 			.rd_data		(new_inst_tag),
@@ -44,7 +46,7 @@ module TAG_GENERATOR #() (
 		);
 	
 	assign new_inst_tag_valid = new_valid_inst & (~tag_fifo_empty);
-	
+	assign retire_tag_in[0]	  = retire_tag	;
 	
 		
 endmodule

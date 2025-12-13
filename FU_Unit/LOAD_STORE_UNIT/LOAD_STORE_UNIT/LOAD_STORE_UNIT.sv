@@ -44,7 +44,11 @@ module LOAD_STORE_UNIT #() (
 	output	logic								memory_req_valid,
 	output memory_op_t							memory_req_op,
 	output logic [`D_MEMORY_ADDR_WIDTH-1:0]		memory_req_address,
-	output logic [`REG_VAL_WIDTH-1:0]			memory_req_data
+	output logic [`REG_VAL_WIDTH-1:0]			memory_req_data,
+	
+	//Send to Retire Tag Unit
+	output logic 								clear_lsq_entry_valid,
+	output logic [`ROB_SIZE_WIDTH-1:0]			clear_lsq_entry_tag				
 
 );
 
@@ -85,7 +89,10 @@ module LOAD_STORE_UNIT #() (
 			.cdb_valid			(cdb_valid),
 			.cdb_register_addr	(cdb_register_addr),
 			.cdb_register_val	(cdb_register_val),
-			.cdb_inst_tag		(cdb_inst_tag)
+			.cdb_inst_tag		(cdb_inst_tag),
+			
+			.clear_lsq_entry_valid	(clear_lsq_entry_valid),
+			.clear_lsq_entry_tag	(clear_lsq_entry_tag)
 		);
 		
 		

@@ -5,6 +5,7 @@
 -f $DESIGN/filelists/BRANCH_MISPRED_UNIT/filelist.f
 -f $DESIGN/filelists/FU_Unit/filelist.f
 -f $DESIGN/filelists/ID_Unit/filelist.f
+-f $DESIGN/filelists/RETIRE_TAGS/filelist.f
 -f $DESIGN/filelists/IF_Unit/filelist.f
 -f $DESIGN/filelists/PHY_REGFILE/filelist.f
 -f $DESIGN/filelists/RS_Unit/filelist.f
