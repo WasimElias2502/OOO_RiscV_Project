@@ -29,6 +29,7 @@ module RS #(
 	input [`ROB_SIZE_WIDTH-1:0]			new_inst_tag					,
 	
 	output								cdb_ready						,
+	output								rs_full							,
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
 	FU_IF.RS							fu_if 	 						,
 	RS2REG_STATUS_IF.RS					reg_status_table_if
@@ -190,6 +191,7 @@ module RS #(
 			
 			
 			//  ======================= Got new executed command -- update register ====================================
+			
 			for(int cdb_idx=0 ; cdb_idx<`NUM_OF_FU ; cdb_idx++) begin
 				
 
@@ -223,7 +225,7 @@ module RS #(
 		
 		else begin
 			
-			//Defaule vals
+			//Default vals
 			for(int i=0 ; i<FU_NUM ; i++) begin
 				fu_if.valid[i] <= 1'b0;
 		    end
@@ -242,6 +244,45 @@ module RS #(
 			end // for(int i=0 ; i<RS_ENTRIES_NUM ; i++) begin
 		end //else begin
 	end // always_ff @(posedge clk or posedge reset)
+	
+	
+	logic 									new_occupied_rs				;
+	logic [RS_ENTRIES_NUM-1:0] 				dispatched_occupied_cntr	;
+	
+	assign new_occupied_rs = new_valid_inst ;
+	
+	always_comb begin
+		dispatched_occupied_cntr = '0;
+		for (int i = 0; i < RS_ENTRIES_NUM; i++) begin
+			if(rs_dispatch_en[i]) begin
+				dispatched_occupied_cntr += 1;
+			end
+		end
+	end
+	
+	logic [RS_ENTRIES_NUM-1:0] 				next_occupied_rs_cntr	;
+	logic [RS_ENTRIES_NUM-1:0] 				occupied_rs_cntr	;
+
+
+	always_comb begin
+		if(reset) begin
+			next_occupied_rs_cntr = '0;
+		end
+		else begin
+			next_occupied_rs_cntr = occupied_rs_cntr + new_occupied_rs - dispatched_occupied_cntr;
+		end
+	end
+	
+	always_ff @(posedge clk or posedge reset) begin
+		if(reset) begin
+			occupied_rs_cntr	<= '0					;
+		end
+		else begin
+			occupied_rs_cntr	<= next_occupied_rs_cntr;
+		end
+	end
+	
+	assign rs_full = next_occupied_rs_cntr == RS_ENTRIES_NUM ;
 
 
 endmodule
