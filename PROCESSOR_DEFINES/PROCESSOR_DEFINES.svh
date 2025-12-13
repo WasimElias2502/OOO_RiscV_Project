@@ -17,7 +17,7 @@
 	`define FETCH_WIDTH 				1						// Number of instruction to fetch
 	`define REG_VAL_WIDTH				32
 	`define GENERATED_IMMEDIATE_WIDTH  `REG_VAL_WIDTH
-	`define D_MEMORY_ADDR_WIDTH			32
+	`define D_MEMORY_ADDR_WIDTH			16
 	`define D_MEMORY_SIZE 				(1<<`D_MEMORY_ADDR_WIDTH)
 	
 	
