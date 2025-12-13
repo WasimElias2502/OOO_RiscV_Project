@@ -57,6 +57,7 @@ module PHY_REGFILE_WRAPPER #(
 	logic 	[`INST_ADDR_WIDTH-1:0] 				stalled_pc_in					; 
 	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	stalled_generated_immediate_in	;
 	logic										stalled_valid					;
+	logic  [`ROB_SIZE_WIDTH-1:0]				stalled_inst_tag				;
 	
 	//TODO: check tag stall
 	
@@ -64,16 +65,18 @@ module PHY_REGFILE_WRAPPER #(
 	always_ff @(posedge clk or posedge reset) begin
 		if (reset) begin
 			stalled_valid       			<= 1'b0;
-			stalled_src_phy_reg1_in			<= 1'b0;
-			stalled_src_phy_reg2_in			<= 1'b0;
-			stalled_dst_phy_reg_in 			<= 1'b0;
-			stalled_control_in.alu_src 	  <= src_reg2 ;
-			stalled_control_in.alu_op 		  <= add_op	;
+			stalled_src_phy_reg1_in			<= '0;
+			stalled_src_phy_reg2_in			<= '0;
+			stalled_dst_phy_reg_in 			<= '0;
+			stalled_control_in.alu_src 	  	<= src_reg2 ;
+			stalled_control_in.alu_op 		 <= add_op	;
 			stalled_control_in.is_branch_op  <= 1'b0;
-			stalled_control_in.memory_op	  <= no_mem_op;
-			stalled_control_in.reg_wb 		  <= 1'b0;
-			stalled_pc_in					<= 1'b0;
-			stalled_generated_immediate_in	<= 1'b0;
+			stalled_control_in.memory_op	 <= no_mem_op;
+			stalled_control_in.reg_wb 		 <= 1'b0;
+			stalled_pc_in					<= '0;
+			stalled_generated_immediate_in	<= '0;
+			stalled_inst_tag				<= '0;
+			
 			
 		end else begin
 			
@@ -85,6 +88,7 @@ module PHY_REGFILE_WRAPPER #(
 				stalled_control_in				<= control_in;
 				stalled_pc_in					<= pc_in;
 				stalled_generated_immediate_in	<= generated_immediate_in;
+				stalled_inst_tag				<= inst_tag_in ;
 			end
 			
 			else if (stalled_valid && ~stall) begin
@@ -100,6 +104,8 @@ module PHY_REGFILE_WRAPPER #(
 	control_t						  			chosen_control_in				;
 	logic 	[`INST_ADDR_WIDTH-1:0] 				chosen_pc_in					; 
 	logic 	[GENERATED_IMMEDIATE_WIDTH-1:0] 	chosen_generated_immediate_in	;
+	logic   [`ROB_SIZE_WIDTH-1:0]				chosen_inst_tag_out				;
+	
 	
 	
 	//Muxes to select between stalled instruction and new instruction incoming
@@ -109,7 +115,7 @@ module PHY_REGFILE_WRAPPER #(
 	assign chosen_control_in 				= (stalled_valid)? stalled_control_in : control_in;
 	assign chosen_pc_in 					= (stalled_valid)? stalled_pc_in : pc_in;
 	assign chosen_generated_immediate_in 	= (stalled_valid)? stalled_generated_immediate_in : generated_immediate_in;
-	
+	assign chosen_inst_tag_out				= (stalled_valid)? stalled_inst_tag : inst_tag_in ;
 	
 	
 	
@@ -149,7 +155,7 @@ module PHY_REGFILE_WRAPPER #(
 	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg2_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_src_phy_reg2_in) , .out(src_phy_reg2_out));
 	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		dst_phy_reg_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_dst_phy_reg_in) , .out(dst_phy_reg_out));
 	DFF #(`INST_ADDR_WIDTH) 			pc_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_pc_in) , .out(pc_out));
-	DFF #(`ROB_SIZE_WIDTH)				tag_ff			(.clk(clk) , .rst (reset), .enable(1) , .in(inst_tag_in) , .out(inst_tag_out) );
+	DFF #(`ROB_SIZE_WIDTH)				tag_ff			(.clk(clk) , .rst (reset), .enable(1) , .in(chosen_inst_tag_out) , .out(inst_tag_out) );
 	DFF #(GENERATED_IMMEDIATE_WIDTH) 	immediate_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_generated_immediate_in) , .out(generated_immediate_out));
 	
 	//DFF

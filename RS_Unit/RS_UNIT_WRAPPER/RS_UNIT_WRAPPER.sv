@@ -24,7 +24,8 @@ module RS_UNIT_WRAPPER #() (
 	
 	CDB_IF.slave						cdb_if							,//TODO : CHECK WHERE CDB come from & decide it width
 	FU_IF.RS							alu_if 	 						,
-	FU_IF.RS							mem_if 	 						
+	FU_IF.RS							mem_if 	 						,
+	output								rs_full							
 );
 	//TODO: add if RS are full then stall the pipe
 	
@@ -68,7 +69,10 @@ module RS_UNIT_WRAPPER #() (
 		end
 	end
 	
+	logic mem_rs_full	;
+	logic alu_rs_full	;
 	
+	assign rs_full = mem_rs_full | alu_rs_full ;
 	
 	// ========================================= ALU Reservation Stations =================================== //
 	
@@ -89,6 +93,7 @@ module RS_UNIT_WRAPPER #() (
 		.new_inst_tag			(new_inst_tag)	,
 		
 		.cdb_ready				(alu_cdb_ready)	,
+		.rs_full				(alu_rs_full)	,
 		.cdb_if					(cdb_if)		,
 		.fu_if					(alu_if)		,
 		.reg_status_table_if	(alu_rs2reg_status_table_if.RS)
@@ -115,6 +120,7 @@ module RS_UNIT_WRAPPER #() (
 		.new_inst_tag			(new_inst_tag)	,
 		
 		.cdb_ready				(mem_cdb_ready)	,
+		.rs_full				(mem_rs_full)	,
 		.cdb_if					(cdb_if)		,
 		.fu_if					(mem_if)		,
 		.reg_status_table_if	(mem_rs2reg_status_table_if.RS)

@@ -21,9 +21,12 @@ module STALL_GENERATOR #() (
 	input 							commit_valid,
 	input 							commited_branch_op,
 	input  [`ROB_SIZE_WIDTH-1:0] 	commited_branch_tag,
+	
+	input							rs_full,
 
 	output 							stall_fetch,
-	output 							stall_decode
+	output 							stall_decode,
+	output							stall_phy_regfile
 );
 
 	// Internal signals
@@ -62,10 +65,14 @@ module STALL_GENERATOR #() (
 			rob_full |
 			cannot_rename |
 			wait_for_branch_to_commit |
-			branch_new_this_cycle;
+			branch_new_this_cycle |
+			rs_full;
 
 	assign stall_decode =
 			wait_for_branch_to_commit |
-			branch_new_this_cycle;
+			branch_new_this_cycle |
+			rs_full;
+	
+	assign stall_phy_regfile = rs_full;
 
 endmodule

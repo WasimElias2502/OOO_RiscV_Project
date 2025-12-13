@@ -17,11 +17,13 @@ module STALL_GENERATOR_WRAPPER #() (
 	input 							branch_op_incoming,
 	input  [`ROB_SIZE_WIDTH-1:0] 	branch_op_incoming_tag,
 	input 							inst_valid,
+	input							rs_full,
 	
 	COMMIT_IF.slave 				commit_if,
 
 	output 							stall_fetch,
-	output 							stall_decode
+	output 							stall_decode,
+	output							stall_phy_regfile
 );
 
 	logic							commit_valid;
@@ -59,13 +61,15 @@ module STALL_GENERATOR_WRAPPER #() (
 		.branch_op_incoming		(branch_op_incoming),
 		.branch_op_incoming_tag (branch_op_incoming_tag),
 		.inst_valid				(inst_valid),
+		.rs_full				(rs_full),
 		
 		.commit_valid			(commit_valid),
 		.commited_branch_op		(commited_branch_op),
 		.commited_branch_tag	(commited_branch_tag),
 		
 		.stall_fetch			(stall_fetch),
-		.stall_decode			(stall_decode)
+		.stall_decode			(stall_decode),
+		.stall_phy_regfile		(stall_phy_regfile)
 	);
 	
 
