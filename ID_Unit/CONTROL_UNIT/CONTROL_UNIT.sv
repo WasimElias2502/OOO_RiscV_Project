@@ -88,12 +88,7 @@ module CONTROL_UNIT #() (
 			
 			if (opcode == I_type_arth) begin
 				case(func3) 
-					0: begin 
-						if (func7 == 0) 
-							control.alu_op = add_op;
-						else if (func7 == 32) 
-							control.alu_op = sub_op;
-						end
+					0:  control.alu_op = add_op;
 					1: control.alu_op = sll_op;
 					2: control.alu_op = slt_op;
 					3: control.alu_op = sltu_op;
