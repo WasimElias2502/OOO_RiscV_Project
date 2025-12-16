@@ -55,13 +55,16 @@ module CPU #() (
 	
 	//*************************************** Finish code Logic ********************************************* // 
 	
-	always_ff @(posedge clk or posedge reset) begin
-		if (reset) begin
-			finish <= 1'b0;
-		end else if (seen_last_inst && rob_empty) begin
-			finish <= 1'b1;
-		end
-	end
+	FINISH_CODE_DETECTOR finish_code_detector (
+		.clk					(clk),
+		.reset					(reset),
+		.seen_last_inst			(seen_last_inst),
+		.issue_valid			(IDU2PHY_REGFILE_if.valid_inst),
+		.issue_tag				(IDU2PHY_REGFILE_if.inst_tag),
+		.commit_tag				(COMMIT_if.commit_tag),
+		.commit_valid			(COMMIT_if.commit_valid),
+		.finish_code			(finish)
+	);
 
 	
 	

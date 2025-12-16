@@ -11,4 +11,5 @@
 -f $DESIGN/filelists/RS_Unit/filelist.f
 -f $DESIGN/filelists/ROB/filelist.f
 -f $DESIGN/filelists/STALL_GENERATOR/filelist.f
+-f $DESIGN/filelists/FINISH_CODE_DETECTOR/filelist.f
 $DESIGN/CPU/CPU.sv

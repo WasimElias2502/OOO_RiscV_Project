@@ -93,7 +93,7 @@ module CPU_TB #() ();
 		
 		cycles_cntr <= 0;
 		
-		while (!finish) begin
+		while (!finish || (finish && !MEM_if.memory_ready)) begin //While not finish or finish code but did not finish last mem trans
 			@(posedge clk);
 			cycles_cntr <= cycles_cntr+1;
 		end
@@ -115,7 +115,13 @@ module CPU_TB #() ();
 			
 		
 		//Monitor FINISH indication of code
-		@(posedge finish);		
+		@(posedge finish);
+		
+		//Finish last Memory Transaction
+		if (MEM_if.memory_ready != 1'b1) begin
+			@(posedge MEM_if.memory_ready);
+		end
+		
 		dump_regfile();
 		
 		$display("[CPU_DEBUG] Finish code at time: %t\n" , $time );
