@@ -56,14 +56,14 @@
 	`define HIGH_LATENCY_CYCLES			5
 	
 	//************************ ReOrder Buffer Defines ****************************//
-	`define ROB_SIZE_WIDTH				3
+	`define ROB_SIZE_WIDTH				5
 	`define ROB_SIZE					(1<<`ROB_SIZE_WIDTH)
 	`define MAX_NUM_OF_COMMITS_WIDTH	2
 	`define MAX_NUM_OF_COMMITS			(1<<`MAX_NUM_OF_COMMITS_WIDTH)
 	
 	//************************ D_MEMORY Defines ****************************//
 	
-	`define MEMORY_DELAY				50
+	`define MEMORY_DELAY				20
 	`define MEMORY_DELAY_WIDTH			$bits(`MEMORY_DELAY)
 
 	

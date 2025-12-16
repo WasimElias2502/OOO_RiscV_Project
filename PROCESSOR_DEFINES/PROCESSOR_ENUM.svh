@@ -5,8 +5,8 @@
  * Creation date : Jun 20, 2025
  * Description   :
  *------------------------------------------------------------------------------*/
-`ifndef   __PROCESSOE_ENUM__
-`define   __PROCESSOE_ENUM__ 
+`ifndef   __PROCESSOR_ENUM__
+`define   __PROCESSOR_ENUM__ 
 
 	//****************** Instruction Fetch Unit Enum *************************//
 	
@@ -77,7 +77,7 @@
 		
 		bit									occupied			;
 		bit [`ARCH_REG_NUM_WIDTH-1:0]		dest_arch_register 	;
-		bit	[`PHYSICAL_REG_NUM_WIDTH]		dest_phy_register	;
+		bit	[`PHYSICAL_REG_NUM_WIDTH-1:0]	dest_phy_register	;
 		bit [`REG_VAL_WIDTH-1:0]			dest_val			;
 		bit 								can_commit			;
 		commit_type_t						commit_type			;							
