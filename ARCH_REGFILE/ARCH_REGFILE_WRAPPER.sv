@@ -47,8 +47,8 @@ module ARCH_REGFILE_WRAPPER #() (
 		.read_valid			(read_valid_d)
 	);
 	
-	DFF #(`REG_VAL_WIDTH) 	read_value_ff (.clk(clk) , .rst(rst) , .enable(1) , .in(read_value_d) , .out(read_regs_if.read_value));	
-	DFF #(1) 				read_valid_ff (.clk(clk) , .rst(rst) , .enable(1) , .in(read_valid_d) , .out(read_regs_if.read_valid));		
+	DFF #(`REG_VAL_WIDTH) 	read_value_ff (.clk(clk) , .rst(rst) , .enable(1'b1) , .in(read_value_d) , .out(read_regs_if.read_value));	
+	DFF #(1) 				read_valid_ff (.clk(clk) , .rst(rst) , .enable(1'b1) , .in(read_valid_d) , .out(read_regs_if.read_valid));		
 
 
 endmodule

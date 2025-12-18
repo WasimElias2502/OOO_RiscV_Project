@@ -145,7 +145,7 @@ module IDU_WRAPPER #(
 		.rob_empty				(rob_empty)
 		
 		);
-	DFF#(`ROB_SIZE_WIDTH) tag_ff	(.clk(clk) , .rst(reset) , .enable(1) , .in(new_inst_tag) , .out(inst_tag));
+	DFF#(`ROB_SIZE_WIDTH) tag_ff	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(new_inst_tag) , .out(inst_tag));
 
 //****************************** Control Unit Instantiation ********************************//
 
@@ -186,7 +186,7 @@ module IDU_WRAPPER #(
 
 	assign pc_out_d = (stalled_valid) ? stalled_pc_in : pc_in ;
 	
-	DFF #(INST_ADDR_WIDTH) 	pc_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(pc_out_d) , .out(pc_out));
+	DFF #(INST_ADDR_WIDTH) 	pc_ff (.clk(clk) , .rst(reset) , .enable(1'b1) , .in(pc_out_d) , .out(pc_out));
 
 
 //**************************** Register Alias Table Instantiation **********************************//
@@ -229,12 +229,12 @@ module IDU_WRAPPER #(
 	);
 	
 	
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num1_d) 			, .out(phy_read_reg_num1));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_read_reg_num2_d) 			, .out(phy_read_reg_num2));
-	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1) , .in(phy_write_reg_num_d) 			, .out(phy_write_reg_num));
-	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(can_rename) 		 			, .out(can_rename_to_ctrl_unit));
-	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1) , .in(new_valid_inst_out_d & ~flush) 	, .out(new_valid_inst_out));
-	DFF #(ARCH_REG_NUM_WIDTH)		dest_arch_register_ff		(.clk(clk) , .rst(reset) , .enable(1) , .in(arch_write_reg_num) 			, .out(dest_arch_register));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg1_ff 			(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(phy_read_reg_num1_d) 			, .out(phy_read_reg_num1));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_read_reg2_ff 			(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(phy_read_reg_num2_d) 			, .out(phy_read_reg_num2));
+	DFF #(PHYSICAL_REG_NUM_WIDTH) 	phy_wr_reg_ff 	 			(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(phy_write_reg_num_d) 			, .out(phy_write_reg_num));
+	DFF #(1) 						can_rename_to_ctrl_unit_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(can_rename) 		 			, .out(can_rename_to_ctrl_unit));
+	DFF #(1) 						new_valid_inst_out_ff 		(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(new_valid_inst_out_d & ~flush) 	, .out(new_valid_inst_out));
+	DFF #(ARCH_REG_NUM_WIDTH)		dest_arch_register_ff		(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(arch_write_reg_num) 			, .out(dest_arch_register));
 	
 	
 //**************************** Immediate Generator Instantiation ******************************//
@@ -248,7 +248,7 @@ module IDU_WRAPPER #(
 		.generated_immediate (generated_immediate_d)
 	);
 	
-	DFF #(GENERATED_IMMEDIATE_WIDTH) immediate_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(generated_immediate_d) , .out(generated_immediate));
+	DFF #(GENERATED_IMMEDIATE_WIDTH) immediate_ff (.clk(clk) , .rst(reset) , .enable(1'b1) , .in(generated_immediate_d) , .out(generated_immediate));
 
 
 endmodule

@@ -5,7 +5,7 @@ interface CDB_IF;
 	logic 								ready							;
 	logic 								valid			[`NUM_OF_FU-1:0];
 	logic [`PHYSICAL_REG_NUM_WIDTH-1:0] register_addr	[`NUM_OF_FU-1:0];
-	logic [`REG_VAL_WIDTH] 				register_val	[`NUM_OF_FU-1:0];
+	logic [`REG_VAL_WIDTH-1:0] 			register_val	[`NUM_OF_FU-1:0];
 	logic [`ROB_SIZE_WIDTH-1:0]			inst_tag		[`NUM_OF_FU-1:0];
 	logic [`INST_ADDR_WIDTH-1:0] 		pc_out 			[`NUM_OF_FU-1:0];
 	logic								branch_taken_out[`NUM_OF_FU-1:0];

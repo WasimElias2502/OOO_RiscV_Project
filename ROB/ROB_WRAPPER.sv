@@ -17,7 +17,7 @@ module ROB_WRAPPER #() (
 	//Register the INST TAG
 	input logic [`ROB_SIZE_WIDTH-1:0]				inst_tag,
 	input logic [`ARCH_REG_NUM_WIDTH-1:0] 			dest_arch_register,
-	input logic	[`PHYSICAL_REG_NUM_WIDTH]			dest_phy_register,
+	input logic	[`PHYSICAL_REG_NUM_WIDTH-1:0]		dest_phy_register,
 	input logic										valid_inst_to_register,
 	input control_t						  			control_in,
 	

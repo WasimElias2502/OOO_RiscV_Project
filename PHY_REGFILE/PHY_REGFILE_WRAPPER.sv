@@ -148,15 +148,15 @@ module PHY_REGFILE_WRAPPER #(
 	logic 	issue_allowed;
 	assign	issue_allowed = (valid_inst_in | stalled_valid ) & ~stall;
 	
-	DFF #(1) 							new_valid_inst_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(issue_allowed) , .out(valid_inst_out));
-	DFF #(`REG_VAL_WIDTH) 				src_val1_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(src_val1_d) , .out(src_val1));
-	DFF #(`REG_VAL_WIDTH) 				src_val2_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(src_val2_d) , .out(src_val2));
-	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg1_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_src_phy_reg1_in) , .out(src_phy_reg1_out));
-	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg2_ff (.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_src_phy_reg2_in) , .out(src_phy_reg2_out));
-	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		dst_phy_reg_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_dst_phy_reg_in) , .out(dst_phy_reg_out));
-	DFF #(`INST_ADDR_WIDTH) 			pc_ff 			(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_pc_in) , .out(pc_out));
-	DFF #(`ROB_SIZE_WIDTH)				tag_ff			(.clk(clk) , .rst (reset), .enable(1) , .in(chosen_inst_tag_out) , .out(inst_tag_out) );
-	DFF #(GENERATED_IMMEDIATE_WIDTH) 	immediate_ff 	(.clk(clk) , .rst(reset) , .enable(1) , .in(chosen_generated_immediate_in) , .out(generated_immediate_out));
+	DFF #(1) 							new_valid_inst_ff (.clk(clk) , .rst(reset) , .enable(1'b1) , .in(issue_allowed) , .out(valid_inst_out));
+	DFF #(`REG_VAL_WIDTH) 				src_val1_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(src_val1_d) , .out(src_val1));
+	DFF #(`REG_VAL_WIDTH) 				src_val2_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(src_val2_d) , .out(src_val2));
+	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg1_ff (.clk(clk) , .rst(reset) , .enable(1'b1) , .in(chosen_src_phy_reg1_in) , .out(src_phy_reg1_out));
+	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		src_phy_reg2_ff (.clk(clk) , .rst(reset) , .enable(1'b1) , .in(chosen_src_phy_reg2_in) , .out(src_phy_reg2_out));
+	DFF #(`PHYSICAL_REG_NUM_WIDTH) 		dst_phy_reg_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(chosen_dst_phy_reg_in) , .out(dst_phy_reg_out));
+	DFF #(`INST_ADDR_WIDTH) 			pc_ff 			(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(chosen_pc_in) , .out(pc_out));
+	DFF #(`ROB_SIZE_WIDTH)				tag_ff			(.clk(clk) , .rst (reset), .enable(1'b1) , .in(chosen_inst_tag_out) , .out(inst_tag_out) );
+	DFF #(GENERATED_IMMEDIATE_WIDTH) 	immediate_ff 	(.clk(clk) , .rst(reset) , .enable(1'b1) , .in(chosen_generated_immediate_in) , .out(generated_immediate_out));
 	
 	//DFF
 	always_ff @(posedge clk or posedge reset) begin
